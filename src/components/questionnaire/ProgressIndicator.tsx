@@ -15,7 +15,7 @@ export default function ProgressIndicator({
         <span className="q-progress__label">
           Question {currentIndex + 1} of {totalQuestions}
         </span>
-        <span className="q-progress__percent">{progressPercent}%</span>
+        <span className="q-progress__percent">{progressPercent}% Complete</span>
       </div>
       <div className="q-progress__track" role="progressbar" aria-valuenow={progressPercent} aria-valuemin={0} aria-valuemax={100}>
         <div

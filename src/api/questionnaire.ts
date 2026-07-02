@@ -69,8 +69,8 @@ function normalizeLegacyQuestionnaire(
 
   return {
     id: questionnaireId,
-    title: 'Questionnaire',
-    description: `Hello ${payload.panelist?.name ?? 'there'}, please complete the questionnaire below.`,
+    title: 'Complete Your Profile',
+    description: 'Please answer the following questions to help us know you better.',
     questions,
     alreadyCompleted: Boolean(payload.already_completed),
     panelistName: payload.panelist?.name,
@@ -96,14 +96,37 @@ export async function fetchQuestionnaire(verificationParams?: Record<string, str
   return normalizeLegacyQuestionnaire(legacyData, userToken);
 }
 
+function formatAnswerForApi(answer: string | string[] | number | null): string {
+  if (answer === null || answer === undefined) return '';
+  if (Array.isArray(answer)) return answer.join(', ');
+  return String(answer);
+}
+
 export function buildQuestionnaireSubmissionPayload(submission: QuestionnaireSubmission) {
   return {
-    questionnaire_id: submission.questionnaireId,
-    submitted_at: submission.submittedAt,
-    Userid: submission.verificationParams?.Userid ?? submission.verificationParams?.userId ?? '',
     answers: Object.entries(submission.answers).map(([question_id, answer]) => ({
       question_id: Number(question_id),
-      answer,
+      answer: formatAnswerForApi(answer),
     })),
   };
+}
+
+export interface SubmitQuestionnaireResponse {
+  success: boolean;
+  message: string;
+}
+
+export async function submitQuestionnaire(
+  verificationParams: Record<string, string>,
+  submission: QuestionnaireSubmission
+): Promise<SubmitQuestionnaireResponse> {
+  const userToken = verificationParams.Userid ?? verificationParams.userId ?? '';
+  const body = buildQuestionnaireSubmissionPayload(submission);
+  return apiRequest<SubmitQuestionnaireResponse>(
+    `/api/questionnaire/submit${buildQueryString({ Userid: userToken })}`,
+    {
+      method: 'POST',
+      body,
+    }
+  );
 }

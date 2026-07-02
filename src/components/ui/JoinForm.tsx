@@ -1,12 +1,12 @@
-import { useCallback, useMemo, useState, type FormEvent } from 'react';
-import { User, Mail, Lock } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { CheckCircle2, User, Mail, Lock } from 'lucide-react';
 import Input from './Input';
 import Button from './Button';
 import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
-import { encodeSecureToken } from '../../utils/secureToken';
+import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
 
 interface JoinFormProps {
   onSubmit?: (data: JoinFormData) => void;
@@ -35,13 +35,12 @@ export default function JoinForm({
     password: '',
     confirmPassword: '',
   });
-  const [captchaVerified, setCaptchaVerified] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [verificationLink, setVerificationLink] = useState('');
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -49,12 +48,21 @@ export default function JoinForm({
   const isModal = variant === 'modal';
   const inputVariant = isModal ? 'modal' : 'default';
 
+  useEffect(() => {
+    const saved = getSignupSuccess();
+    if (saved) {
+      setSubmitted(true);
+      setSuccessMessage(saved.message);
+      setRegisteredEmail(saved.email);
+    }
+  }, []);
+
   const validationFields = useMemo(
     () => ({
       ...formData,
-      captchaVerified,
+      captchaToken,
     }),
-    [formData, captchaVerified]
+    [formData, captchaToken]
   );
 
   const isFormValid = useMemo(() => isSignupFormValid(validationFields), [validationFields]);
@@ -67,35 +75,31 @@ export default function JoinForm({
 
   const handleCaptchaVerify = useCallback((token: string) => {
     if (!token) return;
-    setCaptchaVerified(true);
     setCaptchaToken(token);
     setErrors((prev) => {
       const next = { ...prev };
-      delete next.captchaVerified;
+      delete next.captchaToken;
       return next;
     });
   }, []);
 
   const handleCaptchaExpire = useCallback(() => {
-    setCaptchaVerified(false);
     setCaptchaToken('');
     setErrors((prev) => ({
       ...prev,
-      captchaVerified: 'reCAPTCHA has expired. Please verify again.',
+      captchaToken: 'reCAPTCHA has expired. Please verify again.',
     }));
   }, []);
 
   const handleCaptchaError = useCallback(() => {
-    setCaptchaVerified(false);
     setCaptchaToken('');
     setErrors((prev) => ({
       ...prev,
-      captchaVerified: 'reCAPTCHA verification failed. Please try again.',
+      captchaToken: 'reCAPTCHA verification failed. Please try again.',
     }));
   }, []);
 
   const resetCaptcha = useCallback(() => {
-    setCaptchaVerified(false);
     setCaptchaToken('');
     setCaptchaResetKey((key) => key + 1);
   }, []);
@@ -107,20 +111,13 @@ export default function JoinForm({
 
     if (!validate()) return;
 
-    if (!captchaToken) {
-      setErrors((prev) => ({
-        ...prev,
-        captchaVerified: 'Please complete the reCAPTCHA verification.',
-      }));
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
+      const trimmedEmail = formData.email.trim();
       const response = await signup({
         name: formData.name.trim(),
-        email: formData.email.trim(),
+        email: trimmedEmail,
         password: formData.password,
         confirm_password: formData.confirmPassword,
         captcha_token: captchaToken,
@@ -130,18 +127,16 @@ export default function JoinForm({
         ...formData,
         captchaToken,
       });
-      setSuccessMessage(
-        response.message || 'Signup successful! Please check your email to activate your account.'
-      );
-      const questionnaireUrl = response.data?.questionnaire_url ?? '';
-      if (questionnaireUrl) {
-        const parsed = new URL(questionnaireUrl, window.location.origin);
-        const rawToken = parsed.searchParams.get('Userid') ?? '';
-        const secureToken = encodeSecureToken(rawToken);
-        setVerificationLink(secureToken ? `/questionnaire/${secureToken}` : questionnaireUrl);
-      } else {
-        setVerificationLink('');
-      }
+
+      const message =
+        response.message || 'Signup successful! Please check your email to activate your account.';
+      setSuccessMessage(message);
+      setRegisteredEmail(trimmedEmail);
+      saveSignupSuccess({
+        message,
+        email: trimmedEmail,
+        completedAt: new Date().toISOString(),
+      });
       setSubmitted(true);
     } catch (error) {
       const message =
@@ -171,20 +166,27 @@ export default function JoinForm({
 
   const displayErrors = useMemo(() => {
     if (showValidation) return errors;
-    return errors.captchaVerified ? { captchaVerified: errors.captchaVerified } : {};
+    return errors.captchaToken ? { captchaToken: errors.captchaToken } : {};
   }, [showValidation, errors]);
 
   if (submitted) {
     return (
       <div className={`join-form join-form--success ${isModal ? 'join-form--modal' : ''} ${className}`}>
         <div className="join-form__success-message">
-          <h3>Registration Complete!</h3>
-          <p>{successMessage}</p>
-          {/* {verificationLink && (
-            <a href={verificationLink} className="join-form__resend">
-              Fill Questionnaire
-            </a>
-          )} */}
+          <CheckCircle2 className="join-form__success-icon" size={48} aria-hidden="true" />
+          <p className="join-form__success-eyebrow">Registration Complete</p>
+          <h3>Sign Up Successful</h3>
+          <p className="join-form__success-lead">
+            {successMessage || 'Please check your email to activate your account.'}
+          </p>
+          {registeredEmail && (
+            <p className="join-form__success-email">
+              A verification email has been sent to <strong>{registeredEmail}</strong>.
+            </p>
+          )}
+          <p className="join-form__success-note">
+            Please activate your account using the link provided in the email.
+          </p>
         </div>
       </div>
     );
@@ -261,12 +263,11 @@ export default function JoinForm({
       />
 
       <Captcha
-        verified={captchaVerified}
         onVerify={handleCaptchaVerify}
         onExpire={handleCaptchaExpire}
         onError={handleCaptchaError}
         variant={inputVariant}
-        error={displayErrors.captchaVerified}
+        error={displayErrors.captchaToken}
         disabled={isSubmitting}
         resetKey={captchaResetKey}
       />

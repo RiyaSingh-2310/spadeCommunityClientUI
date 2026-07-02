@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight, Shield } from 'lucide-react';
 import Button from '../ui/Button';
 
 interface QuestionnaireNavigationProps {
@@ -26,23 +27,35 @@ export default function QuestionnaireNavigation({
         variant="outline"
         onClick={onPrevious}
         disabled={isFirst || isSubmitting}
-        className="q-nav__btn"
+        className="q-nav__btn q-nav__btn--prev"
       >
-        Previous
+        <ArrowLeft size={16} aria-hidden="true" />
+        <span>Previous</span>
       </Button>
+
+      <p className="q-nav__security">
+        <Shield size={14} aria-hidden="true" />
+        <span>Your data is safe with us</span>
+      </p>
 
       {isLast ? (
         <Button
           variant="gradient"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="q-nav__btn"
+          className="q-nav__btn q-nav__btn--next"
         >
-          {isSubmitting ? 'Submitting…' : 'Submit'}
+          <span>{isSubmitting ? 'Submitting…' : 'Submit'}</span>
         </Button>
       ) : (
-        <Button variant="gradient" onClick={onNext} className="q-nav__btn">
-          Next
+        <Button
+          variant="gradient"
+          onClick={onNext}
+          disabled={isSubmitting}
+          className="q-nav__btn q-nav__btn--next"
+        >
+          <span>Next</span>
+          <ArrowRight size={16} aria-hidden="true" />
         </Button>
       )}
     </div>

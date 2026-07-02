@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
-import { fetchQuestionnaire, buildQuestionnaireSubmissionPayload } from '../api/questionnaire';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { fetchQuestionnaire, submitQuestionnaire } from '../api/questionnaire';
+import { ApiError } from '../api/ApiError';
 import type { AnswersMap, Question, QuestionAnswer, Questionnaire } from '../types/questionnaire';
 import { getInitialAnswer, validateAnswer } from '../utils/questionnaireValidation';
 
 interface UseQuestionnaireOptions {
   verificationParams?: Record<string, string>;
-  enableSubmitApi?: boolean;
 }
 
 interface UseQuestionnaireReturn {
@@ -45,6 +45,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [completionMessage, setCompletionMessage] = useState('');
+  const hasSubmittedRef = useRef(false);
 
   const userToken =
     options.verificationParams?.Userid ?? options.verificationParams?.userId ?? '';
@@ -120,13 +121,15 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
   }, [currentIndex]);
 
   const submit = useCallback(async () => {
-    if (!questionnaire || isSubmitting) return;
+    if (!questionnaire || isSubmitting || hasSubmittedRef.current) return;
 
     const firstInvalidQuestion = questionnaire.questions.find(
       (question) => validateAnswer(question, answers[question.id]) !== null
     );
     if (firstInvalidQuestion) {
-      const invalidIndex = questionnaire.questions.findIndex((question) => question.id === firstInvalidQuestion.id);
+      const invalidIndex = questionnaire.questions.findIndex(
+        (question) => question.id === firstInvalidQuestion.id
+      );
       setCurrentIndex(Math.max(invalidIndex, 0));
       setFieldError(validateAnswer(firstInvalidQuestion, answers[firstInvalidQuestion.id]));
       return;
@@ -134,26 +137,29 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
 
     setIsSubmitting(true);
     try {
-      buildQuestionnaireSubmissionPayload({
+      const verificationParams = userToken ? { Userid: userToken } : options.verificationParams ?? {};
+      const response = await submitQuestionnaire(verificationParams, {
         questionnaireId: questionnaire.id,
         answers,
         submittedAt: new Date().toISOString(),
-        verificationParams: userToken ? { Userid: userToken } : options.verificationParams,
+        verificationParams,
       });
 
-      // Submission API wiring is intentionally deferred and can be toggled later.
-      if (options.enableSubmitApi) {
-        setCompletionMessage('Survey submitted successfully.');
-      } else {
-        setCompletionMessage('Your answers are captured and ready for submission.');
-      }
+      hasSubmittedRef.current = true;
+      setCompletionMessage(
+        response.message || 'Questionnaire submitted successfully! Thank you for completing the survey.'
+      );
       setIsComplete(true);
-    } catch {
-      setFieldError('Failed to submit. Please try again.');
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : 'Failed to submit your responses. Please try again.';
+      setFieldError(message);
     } finally {
       setIsSubmitting(false);
     }
-  }, [questionnaire, answers, isSubmitting, userToken, options.verificationParams, options.enableSubmitApi]);
+  }, [questionnaire, answers, isSubmitting, userToken, options.verificationParams]);
 
   return {
     questionnaire,

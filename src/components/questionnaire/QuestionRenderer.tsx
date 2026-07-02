@@ -182,11 +182,14 @@ export default function QuestionRenderer({
       return (
         <fieldset className={`q-field q-field--choice ${hasError ? 'q-field--error' : ''}`}>
           <legend className="sr-only">{question.title}</legend>
-          <div className="q-field__options q-field__options--inline">
-            {[
-              { id: 'yes', label: 'Yes', value: 'yes' },
-              { id: 'no', label: 'No', value: 'no' },
-            ].map((option) => (
+          <div className="q-field__options">
+            {(question.options && question.options.length > 0
+              ? question.options
+              : [
+                  { id: 'yes', label: 'Yes', value: 'Yes' },
+                  { id: 'no', label: 'No', value: 'No' },
+                ]
+            ).map((option) => (
               <label key={option.id} className="q-choice">
                 <input
                   type="radio"

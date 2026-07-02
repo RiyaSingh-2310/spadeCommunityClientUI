@@ -431,9 +431,53 @@
   padding: 40px 24px;
 }
 
-.join-form__success-message h3 {
+.join-form__success-icon {
   color: var(--color-teal);
-  margin-bottom: 8px;
+  margin: 0 auto 12px;
+}
+
+.join-form__success-eyebrow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gray-500);
+  margin-bottom: 6px;
+}
+
+.join-form__success-message h3 {
+  color: var(--color-gray-900);
+  margin-bottom: 12px;
+  font-size: 1.35rem;
+}
+
+.join-form__success-lead {
+  color: var(--color-gray-700);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.join-form__success-email {
+  color: var(--color-gray-600);
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.join-form__success-note {
+  color: var(--color-gray-500);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.join-form--modal .join-form__success-message h3,
+.join-form--modal .join-form__success-lead,
+.join-form--modal .join-form__success-email,
+.join-form--modal .join-form__success-note {
+  color: var(--color-white);
+}
+
+.join-form--modal .join-form__success-eyebrow {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .join-form__resend {

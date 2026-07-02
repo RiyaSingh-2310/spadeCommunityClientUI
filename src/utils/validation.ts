@@ -3,21 +3,25 @@ export interface SignupFields {
   email: string;
   password: string;
   confirmPassword: string;
-  captchaVerified: boolean;
+  captchaToken: string;
 }
 
 export function getSignupValidationErrors(
-  fields: SignupFields
+  fields: SignupFields,
+  options: { requireCaptcha?: boolean } = {}
 ): Partial<Record<keyof SignupFields, string>> {
+  const { requireCaptcha = true } = options;
   const errors: Partial<Record<keyof SignupFields, string>> = {};
 
   if (!fields.name.trim()) {
     errors.name = 'Please enter your full name';
+  } else if (fields.name.trim().length < 2) {
+    errors.name = 'Name must be at least 2 characters';
   }
 
   if (!fields.email.trim()) {
     errors.email = 'Please enter your email address';
-  } else if (!/\S+@\S+\.\S+/.test(fields.email)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
     errors.email = 'Please enter a valid email address';
   }
 
@@ -33,8 +37,8 @@ export function getSignupValidationErrors(
     errors.confirmPassword = 'Passwords do not match';
   }
 
-  if (!fields.captchaVerified) {
-    errors.captchaVerified = 'Please complete the reCAPTCHA verification';
+  if (requireCaptcha && !fields.captchaToken) {
+    errors.captchaToken = 'Please complete the reCAPTCHA verification';
   }
 
   return errors;

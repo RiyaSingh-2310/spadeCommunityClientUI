@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, ClipboardList } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useQuestionnaire } from '../hooks/useQuestionnaire';
 import ProgressIndicator from '../components/questionnaire/ProgressIndicator';
@@ -65,6 +65,7 @@ export default function Questionnaire() {
       <div className="questionnaire-page">
         <div className="questionnaire-page__container">
           <div className="questionnaire-card questionnaire-card--error">
+            <h2>Unable to load questionnaire</h2>
             <p>{error}</p>
             <div className="questionnaire-card__actions">
               <Button variant="outline" onClick={() => void retryLoad()}>
@@ -84,9 +85,9 @@ export default function Questionnaire() {
           <div className="questionnaire-card questionnaire-card--error">
             <h2>Unable to access questionnaire</h2>
             <p>Missing or invalid questionnaire token. Please use the questionnaire link from your email.</p>
-            <div className="questionnaire-card__actions">
-              <Button variant="outline" onClick={() => navigate('/join')}>
-                Request New Questionnaire Link
+            <div className="questionnaire-card__actions questionnaire-card__actions--center">
+              <Button variant="outline" onClick={() => navigate('/')}>
+                Return Home
               </Button>
             </div>
           </div>
@@ -103,12 +104,12 @@ export default function Questionnaire() {
         <div className="questionnaire-page__container">
           <div className="questionnaire-card questionnaire-card--complete">
             <CheckCircle2 className="questionnaire-card__success-icon" size={56} />
-            <h2>Survey Submitted Successfully</h2>
-            <p>{completionMessage || 'Thank you for completing the questionnaire.'}</p>
+            <h2>Questionnaire Submitted Successfully</h2>
+            <p>{completionMessage || 'Thank you for completing the survey.'}</p>
             <p>Your responses have been recorded successfully.</p>
             <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="outline" onClick={() => navigate('/')}>
-                Back to Home
+              <Button variant="gradient" onClick={() => navigate('/')}>
+                Return Home
               </Button>
             </div>
           </div>
@@ -122,11 +123,9 @@ export default function Questionnaire() {
       <div className="questionnaire-page__container">
         <div className="questionnaire-card">
           <header className="questionnaire-card__header">
+            <ClipboardList className="questionnaire-card__header-icon" size={32} aria-hidden="true" />
             <h1 className="questionnaire-card__title">{questionnaire.title}</h1>
             <p className="questionnaire-card__description">{questionnaire.description}</p>
-            <span className="questionnaire-card__count">
-              {totalQuestions} Question{totalQuestions !== 1 ? 's' : ''}
-            </span>
           </header>
 
           <ProgressIndicator
@@ -148,7 +147,7 @@ export default function Questionnaire() {
               )}
             </h2>
             {currentQuestion.description && (
-              <p className="questionnaire-card__question-description">{currentQuestion.description}</p>
+              <p className="questionnaire-card__question-hint">{currentQuestion.description}</p>
             )}
 
             <QuestionRenderer
