@@ -1,0 +1,9 @@
+.testimonials {
+  background: linear-gradient(180deg, var(--color-gray-100) 0%, var(--color-white) 100%);
+  position: relative;
+}
+
+.testimonials__carousel {
+  max-width: 760px;
+  margin: 0 auto;
+}

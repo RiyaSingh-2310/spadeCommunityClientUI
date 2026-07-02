@@ -1,0 +1,105 @@
+.contact {
+  background: var(--color-gray-50);
+}
+
+.contact__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+}
+
+.contact__form {
+  background: var(--color-white);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-gray-200);
+}
+
+.contact__textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  min-height: 140px;
+  margin-bottom: var(--space-4);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.contact__textarea:focus {
+  outline: none;
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.12);
+}
+
+.contact__success {
+  text-align: center;
+  padding: var(--space-10) var(--space-5);
+}
+
+.contact__success h3 {
+  color: var(--color-teal);
+  margin-bottom: var(--space-2);
+  font-weight: 800;
+}
+
+.contact__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.contact__info-item {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-5);
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-gray-200);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.contact__info-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
+.contact__info-icon {
+  color: var(--color-teal);
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 188, 212, 0.1);
+  border-radius: var(--radius-md);
+}
+
+.contact__info-item h4 {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--space-1);
+}
+
+.contact__info-item p,
+.contact__info-item a {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-500);
+  line-height: var(--line-height-relaxed);
+}
+
+.contact__info-item a:hover {
+  color: var(--color-teal);
+}
+
+@media (min-width: 768px) {
+  .contact__grid {
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-12);
+  }
+}

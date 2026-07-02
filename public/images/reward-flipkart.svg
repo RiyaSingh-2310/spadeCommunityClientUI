@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 50" width="120" height="50">
+  <rect x="5" y="5" width="30" height="40" rx="4" fill="#f9d71c"/>
+  <text x="20" y="32" text-anchor="middle" fill="#2874f0" font-size="22" font-family="Arial" font-weight="bold">f</text>
+  <text x="70" y="32" text-anchor="middle" fill="#2874f0" font-size="16" font-family="Arial" font-weight="bold">Flipkart</text>
+</svg>

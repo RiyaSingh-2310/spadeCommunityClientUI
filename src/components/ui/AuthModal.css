@@ -1,0 +1,139 @@
+.auth-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-modal__links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 0.875rem;
+}
+
+.auth-modal__links a,
+.auth-modal__links button {
+  color: var(--color-white);
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.auth-modal__links a:hover,
+.auth-modal__links button:hover {
+  opacity: 0.85;
+}
+
+.auth-modal__success {
+  text-align: center;
+  padding: var(--space-5) 0;
+}
+
+.auth-modal__success-icon {
+  color: var(--color-white);
+  margin: 0 auto var(--space-4);
+  opacity: 0.9;
+}
+
+.auth-modal__success h3 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-2);
+  font-weight: 800;
+}
+
+.auth-modal__success p {
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.auth-modal__footer-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.auth-modal__footer-link button {
+  background: none;
+  border: none;
+  color: var(--color-white);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.auth-modal__footer-link button:hover {
+  opacity: 0.85;
+}
+
+.social-login {
+  margin-top: 24px;
+}
+
+.social-login__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.social-login__divider::before,
+.social-login__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.social-login__divider span {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.social-login__buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.social-login__btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  transition: transform var(--transition), box-shadow var(--transition);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.social-login__btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.social-login__btn--facebook {
+  background: #3b5998;
+}
+
+.social-login__btn--twitter {
+  background: #000000;
+}
+
+.social-login__btn--google {
+  background: var(--color-white);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
