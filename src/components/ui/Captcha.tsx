@@ -1,6 +1,14 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { getRecaptchaSiteKey, isRecaptchaConfigured } from '../../config/recaptcha';
-import { loadRecaptchaScript } from '../../utils/recaptcha';
+import {
+  getRecaptchaConfigError,
+  getRecaptchaSiteKey,
+  isRecaptchaConfigured,
+} from '../../config/recaptcha';
+import {
+  clearRecaptchaContainer,
+  loadRecaptchaScript,
+  resetRecaptcha,
+} from '../../utils/recaptcha';
 import './Captcha.css';
 
 interface CaptchaProps {
@@ -11,6 +19,22 @@ interface CaptchaProps {
   error?: string;
   disabled?: boolean;
   resetKey?: number;
+  /** When false, the widget is not rendered (e.g. modal closed). */
+  active?: boolean;
+}
+
+function waitForVisibleContainer(container: HTMLElement): Promise<void> {
+  return new Promise((resolve) => {
+    const check = () => {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        resolve();
+        return;
+      }
+      requestAnimationFrame(check);
+    };
+    requestAnimationFrame(check);
+  });
 }
 
 export default function Captcha({
@@ -21,18 +45,19 @@ export default function Captcha({
   error,
   disabled = false,
   resetKey = 0,
+  active = true,
 }: CaptchaProps) {
-  const useGoogleRecaptcha = isRecaptchaConfigured();
+  const configError = getRecaptchaConfigError();
+  const useGoogleRecaptcha = isRecaptchaConfigured() && !configError;
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
   const onVerifyRef = useRef(onVerify);
   const onExpireRef = useRef(onExpire);
   const onErrorRef = useRef(onError);
-  const mountedRef = useRef(false);
   const checkboxId = useId();
   const [mockChecked, setMockChecked] = useState(false);
   const [mockVerifying, setMockVerifying] = useState(false);
-  const [isLoading, setIsLoading] = useState(useGoogleRecaptcha);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
 
   onVerifyRef.current = onVerify;
@@ -40,11 +65,17 @@ export default function Captcha({
   onErrorRef.current = onError;
 
   useEffect(() => {
-    if (!useGoogleRecaptcha) return;
+    if (!useGoogleRecaptcha || !active) {
+      setIsLoading(false);
+      return;
+    }
 
     let cancelled = false;
+    const container = containerRef.current;
 
     const mountRecaptcha = async () => {
+      if (!container) return;
+
       setIsLoading(true);
       setLoadError('');
 
@@ -52,22 +83,27 @@ export default function Captcha({
         await loadRecaptchaScript();
         if (cancelled || !containerRef.current || !window.grecaptcha) return;
 
-        if (widgetIdRef.current !== null && mountedRef.current) {
-          window.grecaptcha.reset(widgetIdRef.current);
+        await waitForVisibleContainer(containerRef.current);
+
+        if (cancelled || !containerRef.current) return;
+
+        if (widgetIdRef.current !== null) {
+          resetRecaptcha(widgetIdRef.current);
+          setIsLoading(false);
           return;
         }
 
-        if (containerRef.current.childElementCount > 0) {
-          containerRef.current.innerHTML = '';
-        }
+        clearRecaptchaContainer(containerRef.current);
 
         widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
           sitekey: getRecaptchaSiteKey(),
           callback: (token: string) => onVerifyRef.current(token),
           'expired-callback': () => onExpireRef.current(),
-          'error-callback': () => onErrorRef.current?.(),
+          'error-callback': () => {
+            setLoadError('reCAPTCHA verification failed. Please try again.');
+            onErrorRef.current?.();
+          },
         });
-        mountedRef.current = true;
       } catch {
         if (!cancelled) {
           setLoadError('Unable to load reCAPTCHA. Check your connection and try again.');
@@ -84,11 +120,16 @@ export default function Captcha({
 
     return () => {
       cancelled = true;
+      if (widgetIdRef.current !== null) {
+        resetRecaptcha(widgetIdRef.current);
+        widgetIdRef.current = null;
+      }
+      clearRecaptchaContainer(container);
     };
-  }, [useGoogleRecaptcha, resetKey]);
+  }, [useGoogleRecaptcha, active, resetKey]);
 
   useEffect(() => {
-    if (!useGoogleRecaptcha || resetKey === 0) return;
+    if (useGoogleRecaptcha || resetKey === 0) return;
     setMockChecked(false);
     setMockVerifying(false);
   }, [resetKey, useGoogleRecaptcha]);
@@ -111,16 +152,32 @@ export default function Captcha({
     }, 600);
   };
 
+  if (configError) {
+    return (
+      <div className={`captcha captcha--error-state ${variant === 'modal' ? 'captcha--modal' : ''}`}>
+        <p className="captcha__error" role="alert">
+          {configError}
+        </p>
+      </div>
+    );
+  }
+
   if (useGoogleRecaptcha) {
     return (
       <div
         className={`captcha captcha--recaptcha ${variant === 'modal' ? 'captcha--modal' : ''} ${
-          error ? 'captcha--error' : ''
+          error || loadError ? 'captcha--error' : ''
         } ${disabled ? 'captcha--disabled' : ''}`}
       >
         <div className="captcha__widget-shell" aria-live="polite">
-          {isLoading && <div className="captcha__widget-placeholder" aria-hidden="true" />}
-          <div ref={containerRef} className="captcha__widget" />
+          {isLoading && active && (
+            <div className="captcha__widget-placeholder" aria-hidden="true" />
+          )}
+          <div
+            ref={containerRef}
+            className={`captcha__widget ${active ? '' : 'captcha__widget--hidden'}`}
+            aria-hidden={!active}
+          />
         </div>
         {loadError && (
           <p className="captcha__error" role="alert">
@@ -135,6 +192,8 @@ export default function Captcha({
       </div>
     );
   }
+
+  if (!active) return null;
 
   return (
     <div
@@ -165,7 +224,7 @@ export default function Captcha({
           {error}
         </p>
       )}
-      {!useGoogleRecaptcha && import.meta.env.DEV && (
+      {import.meta.env.DEV && (
         <p className="captcha__dev-note">Development mode: mock CAPTCHA active</p>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { apiRequest } from './http';
+import { ApiError } from './ApiError';
 
 export interface SignupPayload {
   name: string;
@@ -17,10 +18,16 @@ export interface SignupResponse {
 }
 
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
-  return apiRequest<SignupResponse>('/api/panelist/signup', {
+  const response = await apiRequest<SignupResponse>('/api/panelist/signup', {
     method: 'POST',
     body: payload,
   });
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Signup failed. Please try again.', 400);
+  }
+
+  return response;
 }
 
 export interface VerifyAccountPayload {
@@ -36,5 +43,17 @@ export interface VerifyAccountResponse {
 export async function verifyAccount({
   token,
 }: VerifyAccountPayload): Promise<VerifyAccountResponse> {
-  return apiRequest<VerifyAccountResponse>(`/api/panelist/activate/${encodeURIComponent(token)}`);
+  if (!token.trim()) {
+    throw new ApiError('Missing activation token. Please use the link from your email.', 400);
+  }
+
+  const response = await apiRequest<VerifyAccountResponse>(
+    `/api/panelist/activate/${encodeURIComponent(token)}`
+  );
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Unable to activate your account.', 400);
+  }
+
+  return response;
 }

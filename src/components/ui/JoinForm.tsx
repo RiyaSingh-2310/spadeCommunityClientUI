@@ -13,6 +13,8 @@ interface JoinFormProps {
   className?: string;
   variant?: 'hero' | 'modal';
   onSwitchToLogin?: () => void;
+  /** Controls when the reCAPTCHA widget is active (modal visibility). */
+  captchaActive?: boolean;
 }
 
 export interface JoinFormData {
@@ -28,6 +30,7 @@ export default function JoinForm({
   className = '',
   variant = 'hero',
   onSwitchToLogin,
+  captchaActive = true,
 }: JoinFormProps) {
   const [formData, setFormData] = useState({
     name: '',
@@ -56,6 +59,12 @@ export default function JoinForm({
       setRegisteredEmail(saved.email);
     }
   }, []);
+
+  useEffect(() => {
+    if (!captchaActive) {
+      setCaptchaToken('');
+    }
+  }, [captchaActive]);
 
   const validationFields = useMemo(
     () => ({
@@ -270,6 +279,7 @@ export default function JoinForm({
         error={displayErrors.captchaToken}
         disabled={isSubmitting}
         resetKey={captchaResetKey}
+        active={captchaActive}
       />
 
       {isModal ? (

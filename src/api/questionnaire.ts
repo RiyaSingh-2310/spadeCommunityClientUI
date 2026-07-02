@@ -1,4 +1,5 @@
 import type { QuestionType, Questionnaire, QuestionnaireSubmission } from '../types/questionnaire';
+import { ApiError } from './ApiError';
 import { apiRequest } from './http';
 
 interface LegacyPanelist {
@@ -89,10 +90,19 @@ function buildQueryString(params?: Record<string, string>) {
 
 export async function fetchQuestionnaire(verificationParams?: Record<string, string>): Promise<Questionnaire> {
   const userToken = verificationParams?.Userid ?? verificationParams?.userId ?? '';
-  const queryParams = userToken ? { Userid: userToken } : verificationParams;
+  if (!userToken) {
+    throw new ApiError('Missing questionnaire token. Please use the link from your email.', 400);
+  }
+
+  const queryParams = { Userid: userToken };
   const legacyData = await apiRequest<LegacyQuestionnaireResponse>(
     `/api/questionnaire${buildQueryString(queryParams)}`
   );
+
+  if (legacyData.success === false) {
+    throw new ApiError(legacyData.message || 'Unable to load questionnaire.', 400);
+  }
+
   return normalizeLegacyQuestionnaire(legacyData, userToken);
 }
 
@@ -121,12 +131,26 @@ export async function submitQuestionnaire(
   submission: QuestionnaireSubmission
 ): Promise<SubmitQuestionnaireResponse> {
   const userToken = verificationParams.Userid ?? verificationParams.userId ?? '';
+  if (!userToken) {
+    throw new ApiError('Missing questionnaire token. Please use the link from your email.', 400);
+  }
+
   const body = buildQuestionnaireSubmissionPayload(submission);
-  return apiRequest<SubmitQuestionnaireResponse>(
+  if (body.answers.length === 0) {
+    throw new ApiError('Please answer all required questions before submitting.', 400);
+  }
+
+  const response = await apiRequest<SubmitQuestionnaireResponse>(
     `/api/questionnaire/submit${buildQueryString({ Userid: userToken })}`,
     {
       method: 'POST',
       body,
     }
   );
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Failed to submit questionnaire.', 400);
+  }
+
+  return response;
 }

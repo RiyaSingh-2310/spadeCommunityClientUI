@@ -54,7 +54,7 @@ export default function Header() {
                 {'action' in link ? (
                   <button
                     type="button"
-                    className={`header__nav-link header__nav-link--action${link.action === 'signup' ? ' header__nav-link--cta' : ''}`}
+                    className="header__nav-link header__nav-link--action"
                     onClick={() => handleAuthAction(link.action)}
                   >
                     {link.label}

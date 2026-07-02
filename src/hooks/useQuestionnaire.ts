@@ -72,8 +72,12 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
           ? 'You have already completed this questionnaire. Thank you for your response.'
           : ''
       );
-    } catch {
-      setError('Unable to load questionnaire right now. Please check your connection and retry.');
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : 'Unable to load questionnaire right now. Please check your connection and retry.';
+      setError(message);
     } finally {
       setLoading(false);
     }

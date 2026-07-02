@@ -12,6 +12,13 @@
   animation: modal-overlay-in 0.35s ease;
 }
 
+.modal-overlay--hidden {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+  animation: none;
+}
+
 .modal {
   position: relative;
   width: 100%;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import './Modal.css';
 
@@ -8,10 +8,23 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   id?: string;
+  keepMounted?: boolean;
 }
 
-export default function Modal({ isOpen, onClose, title, children, id }: ModalProps) {
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  id,
+  keepMounted = false,
+}: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setHasMounted(true);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -29,13 +42,15 @@ export default function Modal({ isOpen, onClose, title, children, id }: ModalPro
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen && !keepMounted) return null;
+  if (!isOpen && keepMounted && !hasMounted) return null;
 
   return (
     <div
-      className="modal-overlay"
-      onClick={onClose}
+      className={`modal-overlay ${isOpen ? '' : 'modal-overlay--hidden'}`}
+      onClick={isOpen ? onClose : undefined}
       role="presentation"
+      aria-hidden={!isOpen}
     >
       <div
         ref={dialogRef}

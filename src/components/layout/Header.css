@@ -86,18 +86,6 @@
   transform: translateY(-1px);
 }
 
-.header__nav-link--cta {
-  background: rgba(0, 188, 212, 0.15);
-  color: var(--color-teal-light);
-  border: 1px solid rgba(0, 188, 212, 0.3);
-}
-
-.header__nav-link--cta:hover {
-  background: rgba(0, 188, 212, 0.25);
-  color: var(--color-white);
-  border-color: rgba(0, 188, 212, 0.5);
-}
-
 .header__overlay {
   display: none;
 }

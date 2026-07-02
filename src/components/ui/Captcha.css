@@ -129,6 +129,19 @@
   justify-content: flex-start;
 }
 
+.captcha__widget--hidden {
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+}
+
+.captcha--error-state {
+  padding: 12px 14px;
+  background: rgba(233, 30, 99, 0.08);
+  border: 1px solid rgba(233, 30, 99, 0.25);
+  border-radius: var(--radius-sm);
+}
+
 .captcha--modal .captcha__widget {
   transform-origin: top left;
 }
