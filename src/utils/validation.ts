@@ -1,3 +1,5 @@
+import { isSignupCaptchaRequired } from '../config/signup';
+
 export interface SignupFields {
   name: string;
   email: string;
@@ -10,7 +12,7 @@ export function getSignupValidationErrors(
   fields: SignupFields,
   options: { requireCaptcha?: boolean } = {}
 ): Partial<Record<keyof SignupFields, string>> {
-  const { requireCaptcha = true } = options;
+  const { requireCaptcha = isSignupCaptchaRequired() } = options;
   const errors: Partial<Record<keyof SignupFields, string>> = {};
 
   if (!fields.name.trim()) {

@@ -5,6 +5,7 @@ import Button from './Button';
 import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
+import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
 
@@ -50,6 +51,7 @@ export default function JoinForm({
 
   const isModal = variant === 'modal';
   const inputVariant = isModal ? 'modal' : 'default';
+  const captchaRequired = isSignupCaptchaRequired();
 
   useEffect(() => {
     const saved = getSignupSuccess();
@@ -94,19 +96,21 @@ export default function JoinForm({
 
   const handleCaptchaExpire = useCallback(() => {
     setCaptchaToken('');
+    if (!captchaRequired) return;
     setErrors((prev) => ({
       ...prev,
       captchaToken: 'reCAPTCHA has expired. Please verify again.',
     }));
-  }, []);
+  }, [captchaRequired]);
 
   const handleCaptchaError = useCallback(() => {
     setCaptchaToken('');
+    if (!captchaRequired) return;
     setErrors((prev) => ({
       ...prev,
       captchaToken: 'reCAPTCHA verification failed. Please try again.',
     }));
-  }, []);
+  }, [captchaRequired]);
 
   const resetCaptcha = useCallback(() => {
     setCaptchaToken('');
@@ -129,7 +133,7 @@ export default function JoinForm({
         email: trimmedEmail,
         password: formData.password,
         confirm_password: formData.confirmPassword,
-        captcha_token: captchaToken,
+        captcha_token: getSignupCaptchaToken(captchaToken),
       });
 
       onSubmit?.({
@@ -175,8 +179,8 @@ export default function JoinForm({
 
   const displayErrors = useMemo(() => {
     if (showValidation) return errors;
-    return errors.captchaToken ? { captchaToken: errors.captchaToken } : {};
-  }, [showValidation, errors]);
+    return captchaRequired && errors.captchaToken ? { captchaToken: errors.captchaToken } : {};
+  }, [showValidation, errors, captchaRequired]);
 
   if (submitted) {
     return (
