@@ -46,8 +46,10 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
   const [isComplete, setIsComplete] = useState(false);
   const [completionMessage, setCompletionMessage] = useState('');
 
+  const userToken =
+    options.verificationParams?.Userid ?? options.verificationParams?.userId ?? '';
+
   const loadQuestionnaire = useCallback(async () => {
-    const userToken = options.verificationParams?.Userid ?? options.verificationParams?.userId;
     if (!userToken) {
       setLoading(false);
       setQuestionnaire(null);
@@ -58,7 +60,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchQuestionnaire(options.verificationParams);
+      const data = await fetchQuestionnaire({ Userid: userToken });
       setQuestionnaire(data);
       setAnswers(buildInitialAnswers(data.questions));
       setCurrentIndex(0);
@@ -74,7 +76,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
     } finally {
       setLoading(false);
     }
-  }, [options.verificationParams]);
+  }, [userToken]);
 
   useEffect(() => {
     void loadQuestionnaire();
@@ -136,7 +138,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
         questionnaireId: questionnaire.id,
         answers,
         submittedAt: new Date().toISOString(),
-        verificationParams: options.verificationParams,
+        verificationParams: userToken ? { Userid: userToken } : options.verificationParams,
       });
 
       // Submission API wiring is intentionally deferred and can be toggled later.
@@ -151,7 +153,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
     } finally {
       setIsSubmitting(false);
     }
-  }, [questionnaire, answers, isSubmitting, options.verificationParams, options.enableSubmitApi]);
+  }, [questionnaire, answers, isSubmitting, userToken, options.verificationParams, options.enableSubmitApi]);
 
   return {
     questionnaire,

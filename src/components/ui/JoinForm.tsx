@@ -66,6 +66,7 @@ export default function JoinForm({
   }, [validationFields]);
 
   const handleCaptchaVerify = useCallback((token: string) => {
+    if (!token) return;
     setCaptchaVerified(true);
     setCaptchaToken(token);
     setErrors((prev) => {
@@ -78,6 +79,24 @@ export default function JoinForm({
   const handleCaptchaExpire = useCallback(() => {
     setCaptchaVerified(false);
     setCaptchaToken('');
+    setErrors((prev) => ({
+      ...prev,
+      captchaVerified: 'reCAPTCHA has expired. Please verify again.',
+    }));
+  }, []);
+
+  const handleCaptchaError = useCallback(() => {
+    setCaptchaVerified(false);
+    setCaptchaToken('');
+    setErrors((prev) => ({
+      ...prev,
+      captchaVerified: 'reCAPTCHA verification failed. Please try again.',
+    }));
+  }, []);
+
+  const resetCaptcha = useCallback(() => {
+    setCaptchaVerified(false);
+    setCaptchaToken('');
     setCaptchaResetKey((key) => key + 1);
   }, []);
 
@@ -88,6 +107,14 @@ export default function JoinForm({
 
     if (!validate()) return;
 
+    if (!captchaToken) {
+      setErrors((prev) => ({
+        ...prev,
+        captchaVerified: 'Please complete the reCAPTCHA verification.',
+      }));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -96,6 +123,7 @@ export default function JoinForm({
         email: formData.email.trim(),
         password: formData.password,
         confirm_password: formData.confirmPassword,
+        captcha_token: captchaToken,
       });
 
       onSubmit?.({
@@ -123,7 +151,7 @@ export default function JoinForm({
             ? error.message
             : 'Signup failed. Please try again.';
       setSubmitError(message);
-      handleCaptchaExpire();
+      resetCaptcha();
     } finally {
       setIsSubmitting(false);
     }
@@ -141,7 +169,10 @@ export default function JoinForm({
     if (submitError) setSubmitError('');
   };
 
-  const displayErrors = showValidation ? errors : {};
+  const displayErrors = useMemo(() => {
+    if (showValidation) return errors;
+    return errors.captchaVerified ? { captchaVerified: errors.captchaVerified } : {};
+  }, [showValidation, errors]);
 
   if (submitted) {
     return (
@@ -149,11 +180,11 @@ export default function JoinForm({
         <div className="join-form__success-message">
           <h3>Registration Complete!</h3>
           <p>{successMessage}</p>
-          {verificationLink && (
+          {/* {verificationLink && (
             <a href={verificationLink} className="join-form__resend">
               Fill Questionnaire
             </a>
-          )}
+          )} */}
         </div>
       </div>
     );
@@ -233,6 +264,7 @@ export default function JoinForm({
         verified={captchaVerified}
         onVerify={handleCaptchaVerify}
         onExpire={handleCaptchaExpire}
+        onError={handleCaptchaError}
         variant={inputVariant}
         error={displayErrors.captchaVerified}
         disabled={isSubmitting}

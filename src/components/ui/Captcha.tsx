@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { getRecaptchaSiteKey, isRecaptchaConfigured } from '../../config/recaptcha';
-import { loadRecaptchaScript } from '../../utils/recaptcha';
+import { loadRecaptchaScript, resetRecaptcha } from '../../utils/recaptcha';
 import './Captcha.css';
 
 interface CaptchaProps {
@@ -27,10 +27,18 @@ export default function Captcha({
   const useGoogleRecaptcha = isRecaptchaConfigured();
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const onVerifyRef = useRef(onVerify);
+  const onExpireRef = useRef(onExpire);
+  const onErrorRef = useRef(onError);
   const checkboxId = useId();
   const [mockChecked, setMockChecked] = useState(false);
   const [mockVerifying, setMockVerifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(useGoogleRecaptcha);
   const [loadError, setLoadError] = useState('');
+
+  onVerifyRef.current = onVerify;
+  onExpireRef.current = onExpire;
+  onErrorRef.current = onError;
 
   useEffect(() => {
     if (!useGoogleRecaptcha) return;
@@ -38,6 +46,9 @@ export default function Captcha({
     let cancelled = false;
 
     const mountRecaptcha = async () => {
+      setIsLoading(true);
+      setLoadError('');
+
       try {
         await loadRecaptchaScript();
         if (cancelled || !containerRef.current || !window.grecaptcha) return;
@@ -48,29 +59,35 @@ export default function Captcha({
 
         widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
           sitekey: getRecaptchaSiteKey(),
-          callback: (token: string) => onVerify(token),
-          'expired-callback': onExpire,
+          callback: (token: string) => onVerifyRef.current(token),
+          'expired-callback': () => {
+            resetRecaptcha(widgetIdRef.current);
+            onExpireRef.current();
+          },
           'error-callback': () => {
-            onError?.();
-            onExpire();
+            resetRecaptcha(widgetIdRef.current);
+            onErrorRef.current?.();
           },
         });
-        setLoadError('');
       } catch {
         if (!cancelled) {
-          setLoadError('Unable to load reCAPTCHA. Please refresh and try again.');
-          onError?.();
+          setLoadError('Unable to load reCAPTCHA. Check your connection and try again.');
+          onErrorRef.current?.();
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
         }
       }
     };
 
-    mountRecaptcha();
+    void mountRecaptcha();
 
     return () => {
       cancelled = true;
       widgetIdRef.current = null;
     };
-  }, [useGoogleRecaptcha, resetKey, onVerify, onExpire, onError]);
+  }, [useGoogleRecaptcha, resetKey]);
 
   const handleMockChange = (checked: boolean) => {
     if (disabled) return;
@@ -97,7 +114,10 @@ export default function Captcha({
           error ? 'captcha--error' : ''
         } ${disabled ? 'captcha--disabled' : ''}`}
       >
-        <div ref={containerRef} className="captcha__widget" aria-live="polite" />
+        <div className="captcha__widget-shell" aria-live="polite">
+          {isLoading && <div className="captcha__widget-placeholder" aria-hidden="true" />}
+          <div ref={containerRef} className="captcha__widget" />
+        </div>
         {loadError && (
           <p className="captcha__error" role="alert">
             {loadError}
@@ -107,9 +127,6 @@ export default function Captcha({
           <p className="captcha__error" role="alert">
             {error}
           </p>
-        )}
-        {verified && !error && !loadError && (
-          <p className="captcha__success">Verification complete</p>
         )}
       </div>
     );

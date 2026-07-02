@@ -91,11 +91,52 @@
   white-space: nowrap;
 }
 
+.captcha__widget-shell {
+  position: relative;
+  min-height: 78px;
+  width: 100%;
+  max-width: 304px;
+}
+
+.captcha__widget-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-300);
+  animation: captcha-pulse 1.4s ease-in-out infinite;
+}
+
+.captcha--modal .captcha__widget-placeholder {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+@keyframes captcha-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
 .captcha__widget {
   min-height: 78px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+.captcha--modal .captcha__widget {
+  transform-origin: top left;
+}
+
+@media (max-width: 360px) {
+  .captcha--modal .captcha__widget {
+    transform: scale(0.92);
+  }
 }
 
 .captcha__error {

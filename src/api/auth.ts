@@ -5,6 +5,7 @@ export interface SignupPayload {
   email: string;
   password: string;
   confirm_password: string;
+  captcha_token: string;
 }
 
 export interface SignupResponse {

@@ -34,7 +34,7 @@ export function getSignupValidationErrors(
   }
 
   if (!fields.captchaVerified) {
-    errors.captchaVerified = 'Please verify you are not a robot';
+    errors.captchaVerified = 'Please complete the reCAPTCHA verification';
   }
 
   return errors;
