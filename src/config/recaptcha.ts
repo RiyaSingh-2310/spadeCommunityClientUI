@@ -1,6 +1,9 @@
 /** Google reCAPTCHA v2 Checkbox ("I'm not a robot") — not v3, Invisible, or Enterprise. */
 export const RECAPTCHA_IMPLEMENTATION_LABEL = "reCAPTCHA v2 Checkbox (\"I'm not a robot\")";
 
+/** Latest v2 Checkbox site key prefix — used to detect stale production builds. */
+export const EXPECTED_RECAPTCHA_SITE_KEY_PREFIX = '6LfuvkIt';
+
 export function getRecaptchaSiteKey(): string {
   return import.meta.env.VITE_RECAPTCHA_SITE_KEY?.trim() ?? '';
 }
@@ -12,6 +15,9 @@ export function isRecaptchaConfigured(): boolean {
 export function getRecaptchaConfigError(): string | null {
   const siteKey = getRecaptchaSiteKey();
   if (!siteKey) {
+    if (import.meta.env.PROD) {
+      return 'reCAPTCHA is not configured for this deployment. Add VITE_RECAPTCHA_SITE_KEY in Vercel → Project Settings → Environment Variables (Production & Preview), then redeploy.';
+    }
     return 'reCAPTCHA is not configured. Set VITE_RECAPTCHA_SITE_KEY in .env and restart the dev server.';
   }
   if (siteKey.length < 20) {

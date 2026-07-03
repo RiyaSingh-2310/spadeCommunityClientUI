@@ -20,7 +20,7 @@ export const INVALID_SITE_KEY_MESSAGE =
   'The reCAPTCHA site key is invalid. Verify VITE_RECAPTCHA_SITE_KEY in .env matches your v2 Checkbox site key.';
 
 export const DOMAIN_ERROR_MESSAGE =
-  'This domain is not authorized for your reCAPTCHA site key. Add the current hostname in Google reCAPTCHA Admin → Domains.';
+  'This domain is not authorized for your reCAPTCHA site key. Add the exact hostname (e.g. your-app.vercel.app or your custom domain) in Google reCAPTCHA Admin → Domains, then redeploy if you also changed env vars.';
 
 function readContainerText(container: HTMLElement): string {
   return (container.innerText || container.textContent || '').toLowerCase();
@@ -33,7 +33,7 @@ function classifyWidgetText(text: string): RecaptchaHealthResult | null {
   if (text.includes('invalid site key')) {
     return { status: 'invalid-site-key', message: INVALID_SITE_KEY_MESSAGE };
   }
-  if (text.includes('invalid domain') || text.includes('does not match the list of supported domains')) {
+  if (text.includes('invalid domain') || text.includes('does not match the list of supported domains') || text.includes('invalid domain for site key')) {
     return { status: 'domain-error', message: DOMAIN_ERROR_MESSAGE };
   }
   if (text.includes('error for site owner')) {

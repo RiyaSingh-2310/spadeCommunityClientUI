@@ -1,5 +1,6 @@
 import { getRecaptchaSiteKey } from '../config/recaptcha';
 import { inspectRecaptchaWidgetHealth } from './recaptchaHealth';
+import { logRecaptchaDiag } from './recaptchaDiagnostics';
 
 let scriptLoadPromise: Promise<void> | null = null;
 
@@ -53,7 +54,13 @@ export function loadRecaptchaScript(): Promise<void> {
 
     const finish = () => {
       whenRecaptchaReady()
-        .then(() => resolve())
+        .then(() => {
+          logRecaptchaDiag('Script loaded', {
+            scriptUrl: RECAPTCHA_SCRIPT_URL,
+            grecaptchaAvailable: Boolean(window.grecaptcha?.render),
+          });
+          resolve();
+        })
         .catch((error) => {
           scriptLoadPromise = null;
           reject(error);
@@ -183,8 +190,14 @@ export async function mountRecaptchaWidget(
 
   const widgetId = window.grecaptcha.render(container, {
     sitekey,
-    callback: (token: string) => options.callback?.(token),
-    'expired-callback': () => options['expired-callback']?.(),
+    callback: (token: string) => {
+      logRecaptchaDiag('Token received', { tokenLength: token.length });
+      options.callback?.(token);
+    },
+    'expired-callback': () => {
+      logRecaptchaDiag('Token expired');
+      options['expired-callback']?.();
+    },
     'error-callback': () => options['error-callback']?.(),
   });
 
@@ -192,6 +205,12 @@ export async function mountRecaptchaWidget(
   if (health.status !== 'healthy') {
     throw new Error(health.message);
   }
+
+  logRecaptchaDiag('Widget rendered', {
+    widgetId,
+    healthStatus: health.status,
+    hostname: typeof window !== 'undefined' ? window.location.hostname : 'n/a',
+  });
 
   return widgetId;
 }

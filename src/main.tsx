@@ -4,7 +4,9 @@ import './index.css'
 import './styles/components.css'
 import App from './App.tsx'
 import { preloadRecaptchaScript } from './utils/recaptcha'
+import { runRecaptchaStartupDiagnostics } from './utils/recaptchaDiagnostics'
 
+runRecaptchaStartupDiagnostics()
 preloadRecaptchaScript()
 
 createRoot(document.getElementById('root')!).render(

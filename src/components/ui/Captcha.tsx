@@ -132,6 +132,12 @@ export default function Captcha({
             mountError instanceof Error
               ? mountError.message
               : 'Unable to load reCAPTCHA.';
+          console.error('[reCAPTCHA] Widget initialization failed', {
+            message,
+            hostname: window.location.hostname,
+            origin: window.location.origin,
+            diagnostics: window.__RECAPTCHA_DIAGNOSTICS__,
+          });
           setLoadError(message);
           onErrorRef.current?.();
         }
