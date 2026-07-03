@@ -217,8 +217,8 @@
   }
 
   .hero__form-card {
-    min-width: 460px;
-    max-width: 480px;
+    min-width: 360px;
+    max-width: 460px;
   }
 }
 

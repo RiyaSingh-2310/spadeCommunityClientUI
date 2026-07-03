@@ -8,6 +8,8 @@ export interface SignupFields {
   captchaToken: string;
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function getSignupValidationErrors(
   fields: SignupFields,
   options: { requireCaptcha?: boolean } = {}
@@ -16,21 +18,17 @@ export function getSignupValidationErrors(
   const errors: Partial<Record<keyof SignupFields, string>> = {};
 
   if (!fields.name.trim()) {
-    errors.name = 'Please enter your full name';
-  } else if (fields.name.trim().length < 2) {
-    errors.name = 'Name must be at least 2 characters';
+    errors.name = 'Please enter your name';
   }
 
   if (!fields.email.trim()) {
     errors.email = 'Please enter your email address';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+  } else if (!EMAIL_PATTERN.test(fields.email.trim())) {
     errors.email = 'Please enter a valid email address';
   }
 
   if (!fields.password) {
     errors.password = 'Please enter a password';
-  } else if (fields.password.length < 6) {
-    errors.password = 'Password must be at least 6 characters';
   }
 
   if (!fields.confirmPassword) {
@@ -46,6 +44,7 @@ export function getSignupValidationErrors(
   return errors;
 }
 
+/** True when every requirement for enabling Sign Up is satisfied. */
 export function isSignupFormValid(fields: SignupFields): boolean {
   return Object.keys(getSignupValidationErrors(fields)).length === 0;
 }

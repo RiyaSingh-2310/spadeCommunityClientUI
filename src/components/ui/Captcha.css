@@ -1,9 +1,11 @@
 .captcha {
-  margin: 16px 0;
+  width: 100%;
+  margin: 0 0 14px;
+  box-sizing: border-box;
 }
 
 .captcha--error .captcha__mock-box,
-.captcha--error .captcha__widget {
+.captcha--error .captcha__widget-shell {
   border-color: var(--color-pink);
 }
 
@@ -17,7 +19,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
   background: var(--color-white);
   border: 1px solid var(--color-gray-300);
   border-radius: var(--radius-sm);
@@ -93,23 +97,34 @@
 
 .captcha__widget-shell {
   position: relative;
-  min-height: 78px;
   width: 100%;
-  max-width: 304px;
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* background: var(--color-white);
+  border: 1px solid var(--color-gray-300); */
+  border-radius: var(--radius-sm);
+  line-height: 0;
 }
+
+/* .captcha--modal .captcha__widget-shell {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.4);
+} */
 
 .captcha__widget-placeholder {
   position: absolute;
   inset: 0;
   border-radius: var(--radius-sm);
   background: var(--color-gray-100);
-  border: 1px solid var(--color-gray-300);
+  border: none;
   animation: captcha-pulse 1.4s ease-in-out infinite;
+  z-index: 1;
+  line-height: normal;
 }
 
 .captcha--modal .captcha__widget-placeholder {
   background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.35);
 }
 
 @keyframes captcha-pulse {
@@ -123,10 +138,11 @@
 }
 
 .captcha__widget {
-  min-height: 78px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  width: 304px;
+  height: 78px;
+  transform-origin: 0 0;
+  display: block;
+  will-change: transform;
 }
 
 .captcha__widget--hidden {
@@ -136,7 +152,7 @@
 }
 
 .captcha--error-state {
-  padding: 12px 14px;
+  padding: 10px 12px;
   background: rgba(233, 30, 99, 0.08);
   border: 1px solid rgba(233, 30, 99, 0.25);
   border-radius: var(--radius-sm);
@@ -144,8 +160,9 @@
 
 .captcha__error {
   display: block;
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 0.75rem;
+  line-height: 1.4;
   color: var(--color-pink);
 }
 
@@ -154,13 +171,13 @@
 }
 
 .captcha__success {
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .captcha__hint {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 0.75rem;
   color: var(--color-gray-600);
 }
@@ -170,7 +187,7 @@
 }
 
 .captcha__dev-note {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 0.7rem;
   color: var(--color-gray-500);
   font-style: italic;

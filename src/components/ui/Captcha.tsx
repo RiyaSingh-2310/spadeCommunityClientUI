@@ -7,6 +7,12 @@ import {
 } from '../../utils/recaptcha';
 import './Captcha.css';
 
+/** Intrinsic size of the Google reCAPTCHA v2 Checkbox widget. */
+const RECAPTCHA_WIDGET_WIDTH = 304;
+const RECAPTCHA_WIDGET_HEIGHT = 78;
+/** Slight downscale so the widget matches input field proportions (never scale above this). */
+const RECAPTCHA_COMPACT_SCALE = 0.92;
+
 interface CaptchaProps {
   onVerify: (token: string) => void;
   onExpire: () => void;
@@ -31,6 +37,7 @@ export default function Captcha({
 }: CaptchaProps) {
   const configError = getRecaptchaConfigError();
   const useGoogleRecaptcha = isRecaptchaConfigured() && !configError;
+  const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
   const onVerifyRef = useRef(onVerify);
@@ -45,6 +52,48 @@ export default function Captcha({
   onVerifyRef.current = onVerify;
   onExpireRef.current = onExpire;
   onErrorRef.current = onError;
+
+  useEffect(() => {
+    if (!useGoogleRecaptcha || !active) return;
+
+    const shell = shellRef.current;
+    const widget = containerRef.current;
+    if (!shell || !widget) return;
+
+    const applyScale = () => {
+      const width = shell.clientWidth;
+      if (width <= 0) return;
+
+      const fitScale = width / RECAPTCHA_WIDGET_WIDTH;
+      const scale = Math.min(fitScale, RECAPTCHA_COMPACT_SCALE);
+      const scaledWidth = RECAPTCHA_WIDGET_WIDTH * scale;
+      const scaledHeight = RECAPTCHA_WIDGET_HEIGHT * scale;
+      const offsetX = Math.max(0, (width - scaledWidth) / 2);
+
+      widget.style.width = `${RECAPTCHA_WIDGET_WIDTH}px`;
+      widget.style.height = `${RECAPTCHA_WIDGET_HEIGHT}px`;
+      widget.style.transform = `translateX(${offsetX}px) scale(${scale})`;
+      widget.style.transformOrigin = '0 0';
+      shell.style.height = `${scaledHeight}px`;
+    };
+
+    applyScale();
+
+    const resizeObserver = new ResizeObserver(applyScale);
+    resizeObserver.observe(shell);
+
+    const mutationObserver = new MutationObserver(applyScale);
+    mutationObserver.observe(widget, { childList: true, subtree: true });
+
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      shell.style.height = '';
+      widget.style.transform = '';
+      widget.style.width = '';
+      widget.style.height = '';
+    };
+  }, [useGoogleRecaptcha, active, resetKey, isLoading]);
 
   useEffect(() => {
     if (!useGoogleRecaptcha || !active) {
@@ -146,7 +195,7 @@ export default function Captcha({
           error || loadError ? 'captcha--error' : ''
         } ${disabled ? 'captcha--disabled' : ''}`}
       >
-        <div className="captcha__widget-shell" aria-live="polite">
+        <div ref={shellRef} className="captcha__widget-shell" aria-live="polite">
           {isLoading && active && (
             <div className="captcha__widget-placeholder" aria-hidden="true" />
           )}
