@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Shield, Users, Gift, Star, CheckCircle2 } from 'lucide-react';
 import JoinForm from '../ui/JoinForm';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
@@ -17,7 +18,18 @@ const benefits = [
 
 export default function HeroSection() {
   const { ref: marketingRef, className: marketingClass } = useScrollReveal();
-  const { ref: formRef, className: formClass } = useScrollReveal();
+  const { ref: formRef, isVisible: formVisible } = useScrollReveal();
+  const [captchaReady, setCaptchaReady] = useState(false);
+
+  useEffect(() => {
+    if (!formVisible) {
+      setCaptchaReady(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => setCaptchaReady(true), 100);
+    return () => window.clearTimeout(timer);
+  }, [formVisible]);
 
   return (
     <section className="hero">
@@ -69,9 +81,12 @@ export default function HeroSection() {
           </div>
         </div>
 
-        <div ref={formRef} className={`hero__form-wrapper ${formClass} reveal--delay-2`}>
+        <div
+          ref={formRef}
+          className={`hero__form-wrapper reveal-opacity${formVisible ? ' reveal--visible' : ''} reveal--delay-2`}
+        >
           <div className="hero__form-card">
-            <JoinForm />
+            <JoinForm captchaActive={captchaReady} />
           </div>
         </div>
       </div>

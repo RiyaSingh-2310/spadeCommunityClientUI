@@ -4,6 +4,9 @@ import JoinForm from './JoinForm';
 import { useAuthModal } from '../../context/AuthModalContext';
 import './AuthModal.css';
 
+/** Delay before mounting reCAPTCHA so the modal is visible (no hidden parents). */
+const CAPTCHA_MOUNT_DELAY_MS = 420;
+
 export default function SignUpModal() {
   const { activeModal, closeModal, switchToLogin } = useAuthModal();
   const isOpen = activeModal === 'signup';
@@ -15,17 +18,8 @@ export default function SignUpModal() {
       return;
     }
 
-    let frame1 = 0;
-    let frame2 = 0;
-
-    frame1 = requestAnimationFrame(() => {
-      frame2 = requestAnimationFrame(() => setCaptchaReady(true));
-    });
-
-    return () => {
-      cancelAnimationFrame(frame1);
-      cancelAnimationFrame(frame2);
-    };
+    const timer = window.setTimeout(() => setCaptchaReady(true), CAPTCHA_MOUNT_DELAY_MS);
+    return () => window.clearTimeout(timer);
   }, [isOpen]);
 
   return (
@@ -36,11 +30,13 @@ export default function SignUpModal() {
       id="signup-modal"
       keepMounted
     >
-      <JoinForm
-        variant="modal"
-        onSwitchToLogin={switchToLogin}
-        captchaActive={isOpen && captchaReady}
-      />
+      {isOpen ? (
+        <JoinForm
+          variant="modal"
+          onSwitchToLogin={switchToLogin}
+          captchaActive={captchaReady}
+        />
+      ) : null}
     </Modal>
   );
 }

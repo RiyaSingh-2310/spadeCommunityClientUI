@@ -142,16 +142,6 @@
   border-radius: var(--radius-sm);
 }
 
-.captcha--modal .captcha__widget {
-  transform-origin: top left;
-}
-
-@media (max-width: 360px) {
-  .captcha--modal .captcha__widget {
-    transform: scale(0.92);
-  }
-}
-
 .captcha__error {
   display: block;
   margin-top: 8px;

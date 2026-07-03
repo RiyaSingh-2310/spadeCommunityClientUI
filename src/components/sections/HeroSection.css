@@ -186,7 +186,7 @@
   width: 100%;
   max-width: 460px;
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 

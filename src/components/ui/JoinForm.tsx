@@ -5,6 +5,7 @@ import Button from './Button';
 import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
+import { useAuthModal } from '../../context/AuthModalContext';
 import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
@@ -52,6 +53,10 @@ export default function JoinForm({
   const isModal = variant === 'modal';
   const inputVariant = isModal ? 'modal' : 'default';
   const captchaRequired = isSignupCaptchaRequired();
+  const { activeModal } = useAuthModal();
+  const shouldMountCaptcha = isModal
+    ? captchaActive
+    : captchaActive && activeModal !== 'signup';
 
   useEffect(() => {
     const saved = getSignupSuccess();
@@ -124,6 +129,15 @@ export default function JoinForm({
 
     if (!validate()) return;
 
+    const token = getSignupCaptchaToken(captchaToken);
+    if (captchaRequired && !token) {
+      setErrors((prev) => ({
+        ...prev,
+        captchaToken: 'Please complete the reCAPTCHA verification.',
+      }));
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -133,7 +147,7 @@ export default function JoinForm({
         email: trimmedEmail,
         password: formData.password,
         confirm_password: formData.confirmPassword,
-        captcha_token: getSignupCaptchaToken(captchaToken),
+        captcha_token: token,
       });
 
       onSubmit?.({
@@ -155,6 +169,8 @@ export default function JoinForm({
       const message =
         error instanceof ApiError
           ? error.message
+          : error instanceof TypeError
+            ? 'Network error. Please check your connection and try again.'
           : error instanceof Error
             ? error.message
             : 'Signup failed. Please try again.';
@@ -283,7 +299,7 @@ export default function JoinForm({
         error={displayErrors.captchaToken}
         disabled={isSubmitting}
         resetKey={captchaResetKey}
-        active={captchaActive}
+        active={shouldMountCaptcha}
       />
 
       {isModal ? (

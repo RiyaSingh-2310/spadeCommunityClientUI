@@ -1,12 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import {
-  getRecaptchaConfigError,
-  getRecaptchaSiteKey,
-  isRecaptchaConfigured,
-} from '../../config/recaptcha';
+import { getRecaptchaConfigError, isRecaptchaConfigured } from '../../config/recaptcha';
 import {
   clearRecaptchaContainer,
-  loadRecaptchaScript,
+  mountRecaptchaWidget,
   resetRecaptcha,
 } from '../../utils/recaptcha';
 import './Captcha.css';
@@ -19,22 +15,8 @@ interface CaptchaProps {
   error?: string;
   disabled?: boolean;
   resetKey?: number;
-  /** When false, the widget is not rendered (e.g. modal closed). */
+  /** When false, skip mounting (e.g. modal closed). */
   active?: boolean;
-}
-
-function waitForVisibleContainer(container: HTMLElement): Promise<void> {
-  return new Promise((resolve) => {
-    const check = () => {
-      const rect = container.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        resolve();
-        return;
-      }
-      requestAnimationFrame(check);
-    };
-    requestAnimationFrame(check);
-  });
 }
 
 export default function Captcha({
@@ -73,40 +55,35 @@ export default function Captcha({
     let cancelled = false;
     const container = containerRef.current;
 
-    const mountRecaptcha = async () => {
+    const mountWidget = async () => {
       if (!container) return;
 
       setIsLoading(true);
       setLoadError('');
 
       try {
-        await loadRecaptchaScript();
-        if (cancelled || !containerRef.current || !window.grecaptcha) return;
-
-        await waitForVisibleContainer(containerRef.current);
-
-        if (cancelled || !containerRef.current) return;
-
         if (widgetIdRef.current !== null) {
           resetRecaptcha(widgetIdRef.current);
-          setIsLoading(false);
-          return;
+          widgetIdRef.current = null;
+          clearRecaptchaContainer(container);
         }
 
-        clearRecaptchaContainer(containerRef.current);
-
-        widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
-          sitekey: getRecaptchaSiteKey(),
-          callback: (token: string) => onVerifyRef.current(token),
+        const widgetId = await mountRecaptchaWidget(container, {
+          callback: (token) => onVerifyRef.current(token),
           'expired-callback': () => onExpireRef.current(),
-          'error-callback': () => {
-            setLoadError('reCAPTCHA verification failed. Please try again.');
-            onErrorRef.current?.();
-          },
+          'error-callback': () => onErrorRef.current?.(),
         });
-      } catch {
+
         if (!cancelled) {
-          setLoadError('Unable to load reCAPTCHA. Check your connection and try again.');
+          widgetIdRef.current = widgetId;
+        }
+      } catch (mountError) {
+        if (!cancelled) {
+          const message =
+            mountError instanceof Error
+              ? mountError.message
+              : 'Unable to load reCAPTCHA.';
+          setLoadError(message);
           onErrorRef.current?.();
         }
       } finally {
@@ -116,7 +93,7 @@ export default function Captcha({
       }
     };
 
-    void mountRecaptcha();
+    void mountWidget();
 
     return () => {
       cancelled = true;
@@ -173,11 +150,7 @@ export default function Captcha({
           {isLoading && active && (
             <div className="captcha__widget-placeholder" aria-hidden="true" />
           )}
-          <div
-            ref={containerRef}
-            className={`captcha__widget ${active ? '' : 'captcha__widget--hidden'}`}
-            aria-hidden={!active}
-          />
+          <div ref={containerRef} className="captcha__widget" />
         </div>
         {loadError && (
           <p className="captcha__error" role="alert">
@@ -225,7 +198,7 @@ export default function Captcha({
         </p>
       )}
       {import.meta.env.DEV && (
-        <p className="captcha__dev-note">Development mode: mock CAPTCHA active</p>
+        <p className="captcha__dev-note">Development mode: mock CAPTCHA active (no site key)</p>
       )}
     </div>
   );
