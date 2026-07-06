@@ -146,9 +146,9 @@ export default function Questionnaire() {
                 </span>
               )}
             </h2>
-            {currentQuestion.description && (
+            {/* {currentQuestion.description && (
               <p className="questionnaire-card__question-hint">{currentQuestion.description}</p>
-            )}
+            )} */}
 
             <QuestionRenderer
               question={currentQuestion}
