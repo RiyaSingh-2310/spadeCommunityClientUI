@@ -6,7 +6,6 @@ export interface SignupPayload {
   email: string;
   password: string;
   confirm_password: string;
-  recaptchaToken: string;
 }
 
 export interface SignupResponse {
@@ -20,7 +19,12 @@ export interface SignupResponse {
 export async function signup(payload: SignupPayload): Promise<SignupResponse> {
   const response = await apiRequest<SignupResponse>('/api/panelist/signup', {
     method: 'POST',
-    body: payload,
+    body: {
+      name: payload.name,
+      email: payload.email,
+      password: payload.password,
+      confirm_password: payload.confirm_password,
+    },
   });
 
   if (response.success === false) {

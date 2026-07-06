@@ -6,7 +6,7 @@ import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
+import { isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
 
@@ -129,8 +129,6 @@ export default function JoinForm({
 
     if (!validate()) return;
 
-    const token = getSignupCaptchaToken(captchaToken);
-
     setIsSubmitting(true);
 
     try {
@@ -140,7 +138,6 @@ export default function JoinForm({
         email: trimmedEmail,
         password: formData.password,
         confirm_password: formData.confirmPassword,
-        recaptchaToken: token,
       });
 
       onSubmit?.({
@@ -156,6 +153,7 @@ export default function JoinForm({
         message,
         email: trimmedEmail,
         completedAt: new Date().toISOString(),
+        questionnaireUrl: response.data?.questionnaire_url,
       });
       setSubmitted(true);
     } catch (error) {

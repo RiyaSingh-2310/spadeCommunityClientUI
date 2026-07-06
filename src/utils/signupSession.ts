@@ -4,6 +4,7 @@ export interface SignupSuccessState {
   message: string;
   email: string;
   completedAt: string;
+  questionnaireUrl?: string;
 }
 
 function canUseStorage() {
