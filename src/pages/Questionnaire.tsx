@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, ClipboardList } from 'lucide-react';
+import { CheckCircle2, ClipboardList, Lock, ShieldCheck } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import PreScreenerModal from '../components/prescreener/PreScreenerModal';
+import { usePreScreener } from '../hooks/usePreScreener';
 import { useQuestionnaire } from '../hooks/useQuestionnaire';
 import ProgressIndicator from '../components/questionnaire/ProgressIndicator';
 import QuestionRenderer from '../components/questionnaire/QuestionRenderer';
@@ -19,6 +21,8 @@ export default function Questionnaire() {
   const decodedPathToken = decodeSecureToken(params.secureToken ?? '');
   const userToken = tokenFromQuery || decodedPathToken;
   const verificationParams = userToken ? { Userid: userToken } : undefined;
+
+  const preScreener = usePreScreener(userToken || 'anonymous');
   const {
     questionnaire,
     loading,
@@ -124,10 +128,52 @@ export default function Questionnaire() {
     );
   }
 
+  const surveyLocked = !preScreener.surveyUnlocked;
+
   return (
     <div className="questionnaire-page">
-      <div className="questionnaire-page__container">
-        <div className="questionnaire-card">
+      <PreScreenerModal
+        isOpen={preScreener.isModalOpen}
+        currentIndex={preScreener.currentIndex}
+        totalQuestions={preScreener.totalQuestions}
+        progressPercent={preScreener.progressPercent}
+        currentQuestion={preScreener.currentQuestion}
+        answers={preScreener.answers}
+        fieldError={preScreener.fieldError}
+        onAnswer={preScreener.setAnswer}
+        onPrevious={preScreener.goPrevious}
+        onNext={preScreener.goNext}
+        onFinish={preScreener.handleFinish}
+        onClose={preScreener.dismissModal}
+      />
+
+      {preScreener.showUnlockNotice && (
+        <div className="questionnaire-page__toast" role="status">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <p>Pre-Screener completed successfully. You may now continue with the survey.</p>
+          <button type="button" onClick={preScreener.dismissUnlockNotice} aria-label="Dismiss">
+            ×
+          </button>
+        </div>
+      )}
+
+      <div
+        className={`questionnaire-page__container${surveyLocked ? ' questionnaire-page__container--locked' : ''}`}
+      >
+        {preScreener.lockedMessage && (
+          <div className="questionnaire-page__lock-banner" role="alert">
+            <Lock size={18} aria-hidden="true" />
+            <p>{preScreener.lockedMessage}</p>
+            <Button variant="outline" size="sm" onClick={preScreener.reopenModal}>
+              Start Pre-Screener
+            </Button>
+          </div>
+        )}
+
+        <div
+          className={`questionnaire-card${surveyLocked ? ' questionnaire-card--locked' : ''}`}
+          aria-hidden={surveyLocked}
+        >
           <header className="questionnaire-card__header">
             <ClipboardList className="questionnaire-card__header-icon" size={32} aria-hidden="true" />
             <h1 className="questionnaire-card__title">{questionnaire.title}</h1>
@@ -152,9 +198,6 @@ export default function Questionnaire() {
                 </span>
               )}
             </h2>
-            {/* {currentQuestion.description && (
-              <p className="questionnaire-card__question-hint">{currentQuestion.description}</p>
-            )} */}
 
             <QuestionRenderer
               question={currentQuestion}
@@ -173,6 +216,8 @@ export default function Questionnaire() {
             onSubmit={submit}
           />
         </div>
+
+        {surveyLocked && <div className="questionnaire-page__lock-overlay" aria-hidden="true" />}
       </div>
     </div>
   );

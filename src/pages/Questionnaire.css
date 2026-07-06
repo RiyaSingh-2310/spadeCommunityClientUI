@@ -513,3 +513,129 @@
     padding: 48px 44px;
   }
 }
+
+/* Pre-Screener lock state */
+.questionnaire-page__container--locked {
+  position: relative;
+}
+
+.questionnaire-page__lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.04);
+  pointer-events: none;
+  border-radius: 16px;
+  z-index: 2;
+}
+
+.questionnaire-card--locked {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.55;
+  filter: grayscale(0.15);
+}
+
+.questionnaire-page__lock-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  color: #312e81;
+  font-size: 0.9375rem;
+  animation: lockBannerIn 0.35s ease;
+}
+
+.questionnaire-page__lock-banner p {
+  flex: 1;
+  margin: 0;
+  min-width: 200px;
+}
+
+.questionnaire-page__lock-banner svg {
+  flex-shrink: 0;
+  color: #4f46e5;
+}
+
+@keyframes lockBannerIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.questionnaire-page__toast {
+  position: fixed;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 14px 18px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.15);
+  color: #065f46;
+  font-size: 0.9375rem;
+  animation: toastIn 0.4s ease;
+}
+
+.questionnaire-page__toast p {
+  flex: 1;
+  margin: 0;
+}
+
+.questionnaire-page__toast svg {
+  flex-shrink: 0;
+  color: #059669;
+}
+
+.questionnaire-page__toast button {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #047857;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.questionnaire-page__toast button:hover {
+  background: rgba(5, 150, 105, 0.1);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .questionnaire-page__toast {
+    top: 72px;
+    font-size: 0.875rem;
+  }
+
+  .questionnaire-page__lock-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
