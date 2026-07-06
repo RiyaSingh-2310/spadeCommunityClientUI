@@ -130,13 +130,6 @@ export default function JoinForm({
     if (!validate()) return;
 
     const token = getSignupCaptchaToken(captchaToken);
-    if (captchaRequired && !token) {
-      setErrors((prev) => ({
-        ...prev,
-        captchaToken: 'Please complete the reCAPTCHA verification.',
-      }));
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -147,7 +140,7 @@ export default function JoinForm({
         email: trimmedEmail,
         password: formData.password,
         confirm_password: formData.confirmPassword,
-        captcha_token: token,
+        recaptchaToken: token,
       });
 
       onSubmit?.({
