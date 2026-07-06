@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logo from '../../assets/SpadeCommunitylogocompressed.png';
+import Logo from '../ui/Logo';
 import './QuestionnaireLayout.css';
 
 export default function QuestionnaireFooter() {
@@ -8,9 +8,7 @@ export default function QuestionnaireFooter() {
   return (
     <footer className="survey-footer">
       <div className="survey-footer__inner">
-        <Link to="/" className="survey-footer__logo" aria-label="Spade Community Home">
-          <img src={logo} alt="Spade Community" className="survey-footer__logo-image" />
-        </Link>
+        <Logo className="survey-footer__logo" />
         <p className="survey-footer__copyright">
           &copy; 2000 - {year} SpadeCommunity&reg; All Rights Reserved
         </p>

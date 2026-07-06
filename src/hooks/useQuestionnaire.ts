@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuestionnaire, submitQuestionnaire } from '../api/questionnaire';
 import { ApiError } from '../api/ApiError';
 import type { AnswersMap, Question, QuestionAnswer, Questionnaire } from '../types/questionnaire';
+import { clearOnboardingState } from '../utils/clearOnboardingState';
 import { getInitialAnswer, validateAnswer } from '../utils/questionnaireValidation';
 
 interface UseQuestionnaireOptions {
@@ -72,6 +73,9 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
           ? 'You have already completed this questionnaire. Thank you for your response.'
           : ''
       );
+      if (data.alreadyCompleted) {
+        clearOnboardingState();
+      }
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -154,6 +158,7 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
         response.message || 'Questionnaire submitted successfully! Thank you for completing the survey.'
       );
       setIsComplete(true);
+      clearOnboardingState();
     } catch (error) {
       const message =
         error instanceof ApiError

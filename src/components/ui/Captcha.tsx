@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { getRecaptchaConfigError, isRecaptchaConfigured } from '../../config/recaptcha';
-import { isSignupCaptchaRequired } from '../../config/signup';
 import {
   mountRecaptchaWidget,
   softResetRecaptchaWidget,
@@ -36,8 +35,7 @@ export default function Captcha({
   active = true,
 }: CaptchaProps) {
   const configError = getRecaptchaConfigError();
-  const captchaValidationRequired = isSignupCaptchaRequired();
-  const useGoogleRecaptcha = captchaValidationRequired && isRecaptchaConfigured() && !configError;
+  const useGoogleRecaptcha = isRecaptchaConfigured() && !configError;
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
@@ -174,21 +172,6 @@ export default function Captcha({
       onVerify('mock-captcha-token');
     }, 600);
   };
-
-  // TEMPORARY: reCAPTCHA validation bypassed for development/testing.
-  // Re-enable before production release.
-  if (!captchaValidationRequired) {
-    return (
-      <div
-        className={`captcha captcha--bypass ${variant === 'modal' ? 'captcha--modal' : ''}`}
-        aria-live="polite"
-      >
-        <div className="captcha__bypass-placeholder">
-          reCAPTCHA temporarily disabled in development mode.
-        </div>
-      </div>
-    );
-  }
 
   if (configError) {
     return (

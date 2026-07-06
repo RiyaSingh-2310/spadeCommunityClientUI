@@ -36,3 +36,8 @@ export function wasTokenActivated(token: string): boolean {
   const session = getActivationSuccess();
   return session?.token === token;
 }
+
+export function clearActivationSuccess(): void {
+  if (!canUseStorage()) return;
+  window.sessionStorage.removeItem(ACTIVATION_SUCCESS_KEY);
+}

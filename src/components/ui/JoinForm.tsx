@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 import { CheckCircle2, User, Mail, Lock } from 'lucide-react';
 import Input from './Input';
 import Button from './Button';
@@ -6,7 +7,7 @@ import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { isSignupCaptchaRequired } from '../../config/signup';
+import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
 
@@ -50,6 +51,7 @@ export default function JoinForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
 
+  const location = useLocation();
   const isModal = variant === 'modal';
   const inputVariant = isModal ? 'modal' : 'default';
   const captchaRequired = isSignupCaptchaRequired();
@@ -64,8 +66,13 @@ export default function JoinForm({
       setSubmitted(true);
       setSuccessMessage(saved.message);
       setRegisteredEmail(saved.email);
+      return;
     }
-  }, []);
+
+    setSubmitted(false);
+    setSuccessMessage('');
+    setRegisteredEmail('');
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!captchaActive) {
@@ -128,6 +135,14 @@ export default function JoinForm({
     setShowValidation(true);
 
     if (!validate()) return;
+
+    if (captchaRequired && !getSignupCaptchaToken(captchaToken)) {
+      setErrors((prev) => ({
+        ...prev,
+        captchaToken: 'Please complete the reCAPTCHA verification.',
+      }));
+      return;
+    }
 
     setIsSubmitting(true);
 

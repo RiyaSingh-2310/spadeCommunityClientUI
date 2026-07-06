@@ -6,6 +6,7 @@ import ProgressIndicator from '../components/questionnaire/ProgressIndicator';
 import QuestionRenderer from '../components/questionnaire/QuestionRenderer';
 import QuestionnaireNavigation from '../components/questionnaire/QuestionnaireNavigation';
 import Button from '../components/ui/Button';
+import { clearOnboardingState } from '../utils/clearOnboardingState';
 import { decodeSecureToken } from '../utils/secureToken';
 import './Questionnaire.css';
 
@@ -45,6 +46,11 @@ export default function Questionnaire() {
     const timer = setTimeout(() => setAnimating(false), 300);
     return () => clearTimeout(timer);
   }, [currentIndex]);
+
+  const handleReturnHome = () => {
+    clearOnboardingState();
+    navigate('/');
+  };
 
   if (loading) {
     return (
@@ -86,7 +92,7 @@ export default function Questionnaire() {
             <h2>Unable to access questionnaire</h2>
             <p>Missing or invalid questionnaire token. Please use the questionnaire link from your email.</p>
             <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="outline" onClick={() => navigate('/')}>
+              <Button variant="outline" onClick={handleReturnHome}>
                 Return Home
               </Button>
             </div>
@@ -108,7 +114,7 @@ export default function Questionnaire() {
             <p>{completionMessage || 'Thank you for completing the survey.'}</p>
             <p>Your responses have been recorded successfully.</p>
             <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="gradient" onClick={() => navigate('/')}>
+              <Button variant="gradient" onClick={handleReturnHome}>
                 Return Home
               </Button>
             </div>
