@@ -1,18 +1,19 @@
 .faq {
-  background: var(--color-white);
+  background: var(--color-bg);
 }
 
 .faq__more {
   text-align: center;
   margin-top: 32px;
-  color: var(--color-gray-600);
+  color: var(--color-gray-500);
 }
 
 .faq__more a {
-  color: var(--color-teal);
+  color: var(--color-secondary);
   font-weight: 600;
+  transition: color var(--transition-fast);
 }
 
 .faq__more a:hover {
-  color: var(--color-pink);
+  color: var(--color-accent);
 }

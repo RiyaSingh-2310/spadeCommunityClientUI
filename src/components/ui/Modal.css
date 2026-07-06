@@ -6,7 +6,9 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-5);
-  background: rgba(10, 10, 15, 0.75);
+  background: rgba(8, 12, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   animation: modal-overlay-in 0.35s ease;
 }
 
@@ -25,14 +27,13 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: var(--space-10) var(--space-8) var(--space-8);
-  border-radius: var(--radius-xl);
-  background:
-    linear-gradient(145deg, rgba(0, 188, 212, 0.92) 0%, rgba(233, 30, 99, 0.88) 100%);
+  border-radius: var(--radius-2xl);
+  background: var(--gradient-navy-purple);
   box-shadow:
     var(--shadow-xl),
-    0 0 0 1px rgba(255, 255, 255, 0.15) inset,
-    0 0 80px rgba(0, 188, 212, 0.2);
-  animation: modal-in 0.4s var(--ease-spring);
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 0 100px rgba(124, 58, 237, 0.2);
+  animation: modal-in 0.45s var(--ease-spring);
 }
 
 .modal::before {
@@ -40,7 +41,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 40%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 35%),
+    radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -54,26 +57,27 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--color-white);
   transition: background var(--transition-fast), transform var(--transition-fast);
   z-index: 1;
 }
 
 .modal__close:hover {
-  background: rgba(255, 255, 255, 0.28);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.06);
 }
 
 .modal__title {
   position: relative;
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: 800;
   color: var(--color-white);
   text-align: center;
   margin-bottom: var(--space-6);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .modal__body {
@@ -88,21 +92,15 @@
 }
 
 @keyframes modal-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-
-/* Avoid transform on .modal — it breaks Google reCAPTCHA iframe positioning */
 
 @media (max-width: 480px) {
   .modal {
     padding: var(--space-8) var(--space-5) var(--space-6);
     max-height: 95vh;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
   }
 
   .modal__title {

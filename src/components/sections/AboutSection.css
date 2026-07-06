@@ -10,26 +10,33 @@
 }
 
 .about__image-wrapper {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .about__image-wrapper img {
   width: 100%;
   height: 300px;
   object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.about__image-wrapper:hover img {
+  transform: scale(1.03);
 }
 
 .about__title {
+  font-family: var(--font-display);
   font-size: clamp(1.5rem, 3vw, 2rem);
   font-weight: 800;
   color: var(--color-gray-900);
   margin-bottom: 20px;
+  letter-spacing: -0.02em;
 }
 
 .about__text {
-  color: var(--color-gray-600);
+  color: var(--color-gray-500);
   line-height: 1.8;
   margin-bottom: 16px;
 }

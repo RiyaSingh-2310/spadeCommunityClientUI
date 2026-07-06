@@ -1,9 +1,24 @@
 .testimonials {
-  background: linear-gradient(180deg, var(--color-gray-100) 0%, var(--color-white) 100%);
+  background: linear-gradient(180deg, var(--color-gray-50) 0%, var(--color-white) 50%, var(--color-bg) 100%);
   position: relative;
 }
 
+.testimonials::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .testimonials__carousel {
-  max-width: 760px;
+  max-width: 780px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }

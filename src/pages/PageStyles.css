@@ -12,8 +12,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 30% 20%, rgba(0, 188, 212, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 70% 80%, rgba(233, 30, 99, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 25% 25%, rgba(124, 58, 237, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(6, 182, 212, 0.12) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -27,22 +27,23 @@
 }
 
 .page__hero h1 {
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 800;
   margin-bottom: var(--space-3);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
 }
 
 .page__hero p {
   font-size: var(--font-size-lg);
-  opacity: 0.8;
+  opacity: 0.75;
   max-width: 520px;
   margin: 0 auto;
   line-height: var(--line-height-relaxed);
 }
 
 .page__hero--about {
-  background: linear-gradient(135deg, var(--color-rewards-bg), var(--color-dark));
+  background: var(--gradient-navy-purple);
 }
 
 .page__hero--join {
@@ -51,6 +52,7 @@
 
 .page__content {
   padding: var(--space-12) var(--space-5) var(--space-16);
+  background: var(--color-bg);
 }
 
 .page__grid {
@@ -61,7 +63,7 @@
 }
 
 .page__image {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
 }
@@ -73,6 +75,7 @@
 }
 
 .page__text h2 {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: 700;
   color: var(--color-gray-900);
@@ -95,6 +98,7 @@
 }
 
 .page__legal h2 {
+  font-family: var(--font-display);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-gray-900);
@@ -130,7 +134,7 @@
   margin: 0 auto;
   background: var(--color-white);
   padding: var(--space-10) var(--space-8);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-gray-200);
 }
@@ -149,22 +153,24 @@
 }
 
 .auth-card__links a {
-  color: var(--color-teal);
+  color: var(--color-secondary);
   font-weight: 600;
 }
 
 .auth-card__links a:hover {
-  color: var(--color-pink);
+  color: var(--color-accent);
 }
 
 .auth-card__success {
   text-align: center;
-  padding: var(--space-5);
+  padding: var(--space-6);
 }
 
 .auth-card__success h3 {
-  color: var(--color-teal);
+  font-family: var(--font-display);
+  color: var(--color-secondary);
   margin-bottom: var(--space-2);
+  font-weight: 800;
 }
 
 .join-page {
@@ -202,15 +208,16 @@
 
 .page__value-card {
   background: var(--color-white);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   padding: var(--space-10) var(--space-8);
   border: 1px solid var(--color-gray-200);
-  transition: box-shadow var(--transition), transform var(--transition);
+  transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition);
 }
 
 .page__value-card:hover {
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(-4px);
+  transform: translateY(-6px);
+  border-color: rgba(124, 58, 237, 0.15);
 }
 
 .page__value-icon {
@@ -220,6 +227,7 @@
 }
 
 .page__value-card h2 {
+  font-family: var(--font-display);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-gray-900);
