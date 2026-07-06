@@ -4,6 +4,9 @@ import { logRecaptchaDiag } from './recaptchaDiagnostics';
 
 let scriptLoadPromise: Promise<void> | null = null;
 
+const widgetRegistry = new WeakMap<HTMLElement, number>();
+const pendingMounts = new WeakMap<HTMLElement, Promise<number>>();
+
 export interface RecaptchaRenderOptions {
   sitekey?: string;
   callback?: (token: string) => void;
@@ -27,6 +30,36 @@ const RECAPTCHA_SCRIPT_URL =
 
 export function getRecaptchaScriptUrl(): string {
   return RECAPTCHA_SCRIPT_URL;
+}
+
+function hasWidgetDom(container: HTMLElement): boolean {
+  return Boolean(container.querySelector('iframe[src*="recaptcha"], .g-recaptcha'));
+}
+
+export function getWidgetIdForContainer(container: HTMLElement): number | null {
+  const registered = widgetRegistry.get(container);
+  if (registered !== undefined) return registered;
+
+  const stored = container.dataset.recaptchaWidgetId;
+  if (stored) {
+    const parsed = Number(stored);
+    if (!Number.isNaN(parsed)) {
+      widgetRegistry.set(container, parsed);
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+function registerWidget(container: HTMLElement, widgetId: number) {
+  widgetRegistry.set(container, widgetId);
+  container.dataset.recaptchaWidgetId = String(widgetId);
+}
+
+export function unregisterRecaptchaWidget(container: HTMLElement) {
+  widgetRegistry.delete(container);
+  delete container.dataset.recaptchaWidgetId;
 }
 
 export function whenRecaptchaReady(): Promise<void> {
@@ -129,12 +162,6 @@ export function resetRecaptcha(widgetId: number | null) {
   }
 }
 
-export function clearRecaptchaContainer(container: HTMLElement | null) {
-  if (container) {
-    container.innerHTML = '';
-  }
-}
-
 export function waitForVisibleContainer(
   container: HTMLElement,
   timeoutMs = 8000
@@ -168,27 +195,10 @@ export function waitForVisibleContainer(
   });
 }
 
-export async function mountRecaptchaWidget(
-  container: HTMLElement,
-  options: RecaptchaRenderOptions = {}
-): Promise<number> {
+function buildRenderOptions(options: RecaptchaRenderOptions): RecaptchaRenderOptions {
   const sitekey = options.sitekey ?? getRecaptchaSiteKey();
 
-  if (!sitekey) {
-    throw new Error('Missing reCAPTCHA site key');
-  }
-
-  await loadRecaptchaScript();
-
-  if (!window.grecaptcha?.render) {
-    throw new Error('grecaptcha.render is not available');
-  }
-
-  await waitForVisibleContainer(container);
-
-  clearRecaptchaContainer(container);
-
-  const widgetId = window.grecaptcha.render(container, {
+  return {
     sitekey,
     callback: (token: string) => {
       logRecaptchaDiag('Token received', { tokenLength: token.length });
@@ -199,7 +209,28 @@ export async function mountRecaptchaWidget(
       options['expired-callback']?.();
     },
     'error-callback': () => options['error-callback']?.(),
-  });
+  };
+}
+
+async function renderNewWidget(
+  container: HTMLElement,
+  options: RecaptchaRenderOptions
+): Promise<number> {
+  if (!window.grecaptcha?.render) {
+    throw new Error('grecaptcha.render is not available');
+  }
+
+  if (hasWidgetDom(container)) {
+    const existingId = getWidgetIdForContainer(container);
+    if (existingId !== null) {
+      resetRecaptcha(existingId);
+      return existingId;
+    }
+    throw new Error('reCAPTCHA has already been rendered in this element');
+  }
+
+  const widgetId = window.grecaptcha.render(container, buildRenderOptions(options));
+  registerWidget(container, widgetId);
 
   const health = await inspectRecaptchaWidgetHealth(container);
   if (health.status !== 'healthy') {
@@ -213,4 +244,69 @@ export async function mountRecaptchaWidget(
   });
 
   return widgetId;
+}
+
+/**
+ * Mount or reuse a reCAPTCHA widget for a container.
+ * grecaptcha.render() is called at most once per container element.
+ */
+export async function mountRecaptchaWidget(
+  container: HTMLElement,
+  options: RecaptchaRenderOptions = {}
+): Promise<number> {
+  const sitekey = options.sitekey ?? getRecaptchaSiteKey();
+
+  if (!sitekey) {
+    throw new Error('Missing reCAPTCHA site key');
+  }
+
+  const existingId = getWidgetIdForContainer(container);
+  if (existingId !== null && hasWidgetDom(container)) {
+    resetRecaptcha(existingId);
+    logRecaptchaDiag('Widget rendered', {
+      widgetId: existingId,
+      reused: true,
+      hostname: typeof window !== 'undefined' ? window.location.hostname : 'n/a',
+    });
+    return existingId;
+  }
+
+  const pending = pendingMounts.get(container);
+  if (pending) {
+    return pending;
+  }
+
+  const mountPromise = (async () => {
+    await loadRecaptchaScript();
+    await waitForVisibleContainer(container);
+
+    const resolvedId = getWidgetIdForContainer(container);
+    if (resolvedId !== null && hasWidgetDom(container)) {
+      resetRecaptcha(resolvedId);
+      return resolvedId;
+    }
+
+    return renderNewWidget(container, options);
+  })();
+
+  pendingMounts.set(container, mountPromise);
+
+  try {
+    return await mountPromise;
+  } finally {
+    pendingMounts.delete(container);
+  }
+}
+
+/** Soft reset for modal close / hide — keeps widget mounted for reuse. */
+export function softResetRecaptchaWidget(widgetId: number | null) {
+  resetRecaptcha(widgetId);
+}
+
+/** Hard reset after failed submit — clears registry so a fresh container can render. */
+export function hardResetRecaptchaWidget(container: HTMLElement | null, widgetId: number | null) {
+  resetRecaptcha(widgetId);
+  if (container) {
+    unregisterRecaptchaWidget(container);
+  }
 }

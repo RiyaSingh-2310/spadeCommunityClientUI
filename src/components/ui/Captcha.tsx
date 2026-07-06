@@ -2,9 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { getRecaptchaConfigError, isRecaptchaConfigured } from '../../config/recaptcha';
 import { isSignupCaptchaRequired } from '../../config/signup';
 import {
-  clearRecaptchaContainer,
   mountRecaptchaWidget,
-  resetRecaptcha,
+  softResetRecaptchaWidget,
 } from '../../utils/recaptcha';
 import './Captcha.css';
 
@@ -42,6 +41,7 @@ export default function Captcha({
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const mountGenerationRef = useRef(0);
   const onVerifyRef = useRef(onVerify);
   const onExpireRef = useRef(onExpire);
   const onErrorRef = useRef(onError);
@@ -103,48 +103,41 @@ export default function Captcha({
       return;
     }
 
-    let cancelled = false;
     const container = containerRef.current;
+    if (!container) return;
+
+    const generation = ++mountGenerationRef.current;
+    let cancelled = false;
 
     const mountWidget = async () => {
-      if (!container) return;
-
       setIsLoading(true);
       setLoadError('');
 
       try {
-        if (widgetIdRef.current !== null) {
-          resetRecaptcha(widgetIdRef.current);
-          widgetIdRef.current = null;
-          clearRecaptchaContainer(container);
-        }
-
         const widgetId = await mountRecaptchaWidget(container, {
           callback: (token) => onVerifyRef.current(token),
           'expired-callback': () => onExpireRef.current(),
           'error-callback': () => onErrorRef.current?.(),
         });
 
-        if (!cancelled) {
-          widgetIdRef.current = widgetId;
-        }
+        if (cancelled || generation !== mountGenerationRef.current) return;
+
+        widgetIdRef.current = widgetId;
       } catch (mountError) {
-        if (!cancelled) {
-          const message =
-            mountError instanceof Error
-              ? mountError.message
-              : 'Unable to load reCAPTCHA.';
-          console.error('[reCAPTCHA] Widget initialization failed', {
-            message,
-            hostname: window.location.hostname,
-            origin: window.location.origin,
-            diagnostics: window.__RECAPTCHA_DIAGNOSTICS__,
-          });
-          setLoadError(message);
-          onErrorRef.current?.();
-        }
+        if (cancelled || generation !== mountGenerationRef.current) return;
+
+        const message =
+          mountError instanceof Error ? mountError.message : 'Unable to load reCAPTCHA.';
+        console.error('[reCAPTCHA] Widget initialization failed', {
+          message,
+          hostname: window.location.hostname,
+          origin: window.location.origin,
+          diagnostics: window.__RECAPTCHA_DIAGNOSTICS__,
+        });
+        setLoadError(message);
+        onErrorRef.current?.();
       } finally {
-        if (!cancelled) {
+        if (!cancelled && generation === mountGenerationRef.current) {
           setIsLoading(false);
         }
       }
@@ -154,11 +147,7 @@ export default function Captcha({
 
     return () => {
       cancelled = true;
-      if (widgetIdRef.current !== null) {
-        resetRecaptcha(widgetIdRef.current);
-        widgetIdRef.current = null;
-      }
-      clearRecaptchaContainer(container);
+      softResetRecaptchaWidget(widgetIdRef.current);
     };
   }, [useGoogleRecaptcha, active, resetKey]);
 
@@ -222,7 +211,11 @@ export default function Captcha({
           {isLoading && active && (
             <div className="captcha__widget-placeholder" aria-hidden="true" />
           )}
-          <div ref={containerRef} className="captcha__widget" />
+          <div
+            key={resetKey}
+            ref={containerRef}
+            className="captcha__widget"
+          />
         </div>
         {loadError && (
           <p className="captcha__error" role="alert">
