@@ -1,45 +1,44 @@
 import { steps } from '../../data/mockData';
+import { UserPlus, ClipboardList, Gift } from 'lucide-react';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import './HowItWorksSection.css';
+
+const stepIcons = [UserPlus, ClipboardList, Gift];
 
 export default function HowItWorksSection() {
   const { ref, className } = useScrollReveal();
 
   return (
-    <section className="how-it-works section" id="how-it-works" ref={ref}>
+    <section className="process section" id="how-it-works" ref={ref}>
       <div className="container">
-        <div className={className}>
-          <h2 className="section-title">3 Simple Steps</h2>
+        <div className={`process__intro ${className}`}>
+          <span className="process__label">How it works</span>
+          <h2 className="section-title">Three steps to meaningful rewards</h2>
           <p className="section-subtitle">
-            Getting started is easy — join, share your opinions, and earn rewards.
+            A streamlined journey from signup to your first redemption — designed for clarity.
           </p>
         </div>
-        <div className="how-it-works__grid">
-          {steps.map((step, index) => (
-            <div
-              key={step.id}
-              className={`how-it-works__step reveal reveal--delay-${index + 1} ${className.includes('reveal--visible') ? 'reveal--visible' : ''}`}
-            >
-              {index > 0 && (
-                <div className="how-it-works__connector" aria-hidden="true">
-                  <div className="how-it-works__connector-line" />
-                  <div className="how-it-works__connector-arrow">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                    </svg>
-                  </div>
+
+        <div className="process__timeline">
+          <div className="process__track" aria-hidden="true" />
+          {steps.map((step, index) => {
+            const Icon = stepIcons[index];
+            return (
+              <article
+                key={step.id}
+                className={`process__step reveal reveal--delay-${index + 1} ${className.includes('reveal--visible') ? 'reveal--visible' : ''}`}
+              >
+                <div className="process__node">
+                  <Icon size={22} strokeWidth={1.75} />
                 </div>
-              )}
-              <div className="how-it-works__card">
-                <span className="how-it-works__number">{step.id}</span>
-                <div className="how-it-works__image-wrapper">
-                  <img src={step.image} alt={step.title} loading="lazy" />
+                <div className="process__card">
+                  <span className="process__step-num">0{step.id}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
                 </div>
-                <h3 className="how-it-works__title">{step.title}</h3>
-                <p className="how-it-works__description">{step.description}</p>
-              </div>
-            </div>
-          ))}
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -48,7 +48,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer__main container-wide">
         <div className="footer__brand">
-          <Logo size="lg" />
+          <Logo size="lg" variant="light" />
           <p className="footer__tagline">
             Join a trusted research community and get rewarded for sharing your opinions.
           </p>

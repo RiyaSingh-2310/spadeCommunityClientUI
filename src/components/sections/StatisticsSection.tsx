@@ -13,8 +13,8 @@ export default function StatisticsSection() {
     <section className="statistics section" ref={ref}>
       <div className="container">
         <div className={`statistics__header ${className}`}>
-          <h2 className="section-title section-title--light">Trusted by Millions</h2>
-          <p className="section-subtitle section-subtitle--light">
+          <h2 className="section-title">Trusted by Millions</h2>
+          <p className="section-subtitle">
             Join a global community making an impact through research
           </p>
         </div>

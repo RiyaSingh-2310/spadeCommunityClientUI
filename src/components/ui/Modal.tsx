@@ -9,6 +9,10 @@ interface ModalProps {
   children: ReactNode;
   id?: string;
   keepMounted?: boolean;
+  variant?: 'default' | 'split';
+  brandTitle?: string;
+  brandDescription?: string;
+  isClosing?: boolean;
 }
 
 export default function Modal({
@@ -18,9 +22,14 @@ export default function Modal({
   children,
   id,
   keepMounted = false,
+  variant = 'default',
+  brandTitle,
+  brandDescription,
+  isClosing = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const [hasMounted, setHasMounted] = useState(false);
+  const isSplit = variant === 'split';
 
   useEffect(() => {
     if (isOpen) setHasMounted(true);
@@ -47,7 +56,7 @@ export default function Modal({
 
   return (
     <div
-      className={`modal-overlay ${isOpen ? '' : 'modal-overlay--hidden'}`}
+      className={`modal-overlay ${isOpen ? '' : 'modal-overlay--hidden'}${isClosing ? ' modal-overlay--closing' : ''}`}
       onClick={isOpen ? onClose : undefined}
       role="presentation"
       aria-hidden={!isOpen}
@@ -55,7 +64,7 @@ export default function Modal({
       <div
         ref={dialogRef}
         id={id}
-        className="modal"
+        className={`modal ${isSplit ? 'modal--split' : ''}${isClosing ? ' modal--closing' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={id ? `${id}-title` : undefined}
@@ -69,10 +78,20 @@ export default function Modal({
         >
           <X size={20} />
         </button>
-        <h2 className="modal__title" id={id ? `${id}-title` : undefined}>
-          {title}
-        </h2>
-        <div className="modal__body">{children}</div>
+
+        {isSplit && (
+          <div className="modal__brand-panel">
+            <h3>{brandTitle}</h3>
+            <p>{brandDescription}</p>
+          </div>
+        )}
+
+        <div className="modal__form-panel">
+          <h2 className="modal__title" id={id ? `${id}-title` : undefined}>
+            {title}
+          </h2>
+          <div className="modal__body">{children}</div>
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
-import { CheckCircle2, ClipboardList, Lock, ShieldCheck } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { BadgeCheck, ClipboardList, Lock, ShieldCheck, Sparkles } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import PreScreenerModal from '../components/prescreener/PreScreenerModal';
 import { usePreScreener } from '../hooks/usePreScreener';
 import { useQuestionnaire } from '../hooks/useQuestionnaire';
+import { useAutoDismiss } from '../hooks/useAutoDismiss';
 import ProgressIndicator from '../components/questionnaire/ProgressIndicator';
 import QuestionRenderer from '../components/questionnaire/QuestionRenderer';
 import QuestionnaireNavigation from '../components/questionnaire/QuestionnaireNavigation';
 import Button from '../components/ui/Button';
+import SuccessState from '../components/ui/SuccessState';
 import { clearOnboardingState } from '../utils/clearOnboardingState';
+import { saveMemberComplete } from '../utils/memberSession';
+import { getSignupSuccess } from '../utils/signupSession';
 import { decodeSecureToken } from '../utils/secureToken';
 import './Questionnaire.css';
 
@@ -44,6 +48,7 @@ export default function Questionnaire() {
   } = useQuestionnaire({ verificationParams });
 
   const [animating, setAnimating] = useState(false);
+  const [memberSaved, setMemberSaved] = useState(false);
 
   useEffect(() => {
     setAnimating(true);
@@ -51,10 +56,41 @@ export default function Questionnaire() {
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
-  const handleReturnHome = () => {
+  const handleReturnHome = useCallback(() => {
+    const signup = getSignupSuccess();
+    saveMemberComplete({
+      email: signup?.email,
+      completedAt: new Date().toISOString(),
+    });
     clearOnboardingState();
+    window.dispatchEvent(new CustomEvent('onboarding-updated'));
     navigate('/');
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!isComplete || memberSaved) return;
+
+    const signup = getSignupSuccess();
+    saveMemberComplete({
+      email: signup?.email,
+      completedAt: new Date().toISOString(),
+    });
+    clearOnboardingState();
+    setMemberSaved(true);
+    window.dispatchEvent(new CustomEvent('onboarding-updated'));
+  }, [isComplete, memberSaved]);
+
+  const { exiting: toastExiting, dismissNow: dismissToastNow } = useAutoDismiss({
+    active: preScreener.showUnlockNotice,
+    delayMs: 4500,
+    onDismiss: preScreener.dismissUnlockNotice,
+  });
+
+  const { exiting: completionExiting } = useAutoDismiss({
+    active: isComplete,
+    delayMs: 5000,
+    onDismiss: handleReturnHome,
+  });
 
   if (loading) {
     return (
@@ -110,18 +146,35 @@ export default function Questionnaire() {
 
   if (isComplete) {
     return (
-      <div className="questionnaire-page">
+      <div className="questionnaire-page questionnaire-page--complete">
         <div className="questionnaire-page__container">
-          <div className="questionnaire-card questionnaire-card--complete">
-            <CheckCircle2 className="questionnaire-card__success-icon" size={56} />
-            <h2>Questionnaire Submitted Successfully</h2>
-            <p>{completionMessage || 'Thank you for completing the survey.'}</p>
-            <p>Your responses have been recorded successfully.</p>
-            <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="gradient" onClick={handleReturnHome}>
-                Return Home
-              </Button>
-            </div>
+          <div className={`questionnaire-card questionnaire-card--complete questionnaire-card--premium${completionExiting ? ' questionnaire-card--exiting' : ''}`}>
+            <SuccessState
+              variant="premium"
+              icon={BadgeCheck}
+              iconVariant="accent"
+              eyebrow="Survey Complete"
+              title="Thank You for Participating"
+              body={completionMessage || 'Your responses have been recorded successfully.'}
+              badges={[
+                { label: 'Profile Complete', success: true },
+                { label: 'Rewards Eligible', success: true },
+                { label: 'Member Active', success: true },
+              ]}
+              note={
+                <>
+                  <Sparkles size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                  You&apos;re all set. New study invitations will arrive based on your profile.
+                </>
+              }
+              actions={
+                <Button variant="gradient" onClick={handleReturnHome}>
+                  Return Home
+                </Button>
+              }
+              autoHint="Returning home automatically…"
+              exiting={completionExiting}
+            />
           </div>
         </div>
       </div>
@@ -148,10 +201,16 @@ export default function Questionnaire() {
       />
 
       {preScreener.showUnlockNotice && (
-        <div className="questionnaire-page__toast" role="status">
+        <div
+          className={`questionnaire-page__toast${toastExiting ? ' questionnaire-page__toast--exiting' : ''}`}
+          role="status"
+        >
           <ShieldCheck size={20} aria-hidden="true" />
-          <p>Pre-Screener completed successfully. You may now continue with the survey.</p>
-          <button type="button" onClick={preScreener.dismissUnlockNotice} aria-label="Dismiss">
+          <div className="questionnaire-page__toast-copy">
+            <strong>Pre-Screen Completed</strong>
+            <p>Now you can continue to the survey.</p>
+          </div>
+          <button type="button" onClick={dismissToastNow} aria-label="Dismiss">
             ×
           </button>
         </div>

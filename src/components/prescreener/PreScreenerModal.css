@@ -234,9 +234,15 @@
 }
 
 @media (max-width: 480px) {
+  .ps-modal-overlay {
+    padding: var(--space-3);
+    align-items: flex-end;
+  }
+
   .ps-modal {
-    padding: 24px 20px 20px;
-    border-radius: var(--radius-xl);
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 94vh;
   }
 
   .ps-modal__title {

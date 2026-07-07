@@ -4,11 +4,14 @@ import { CheckCircle2, User, Mail, Lock } from 'lucide-react';
 import Input from './Input';
 import Button from './Button';
 import Captcha from './Captcha';
+import SuccessState from './SuccessState';
 import { signup } from '../../api/auth';
 import { ApiError } from '../../api/ApiError';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
+import { getMemberComplete } from '../../utils/memberSession';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
 
 interface JoinFormProps {
@@ -16,6 +19,8 @@ interface JoinFormProps {
   className?: string;
   variant?: 'hero' | 'modal';
   onSwitchToLogin?: () => void;
+  onSignupSuccess?: () => void;
+  onSignupModalClose?: () => void;
   /** Controls when the reCAPTCHA widget is active (modal visibility). */
   captchaActive?: boolean;
 }
@@ -33,6 +38,8 @@ export default function JoinForm({
   className = '',
   variant = 'hero',
   onSwitchToLogin,
+  onSignupSuccess,
+  onSignupModalClose,
   captchaActive = true,
 }: JoinFormProps) {
   const [formData, setFormData] = useState({
@@ -53,7 +60,7 @@ export default function JoinForm({
 
   const location = useLocation();
   const isModal = variant === 'modal';
-  const inputVariant = isModal ? 'modal' : 'default';
+  const inputVariant = 'default';
   const captchaRequired = isSignupCaptchaRequired();
   const { activeModal } = useAuthModal();
   const shouldMountCaptcha = isModal
@@ -61,6 +68,13 @@ export default function JoinForm({
     : captchaActive && activeModal !== 'signup';
 
   useEffect(() => {
+    if (getMemberComplete()) {
+      setSubmitted(false);
+      setSuccessMessage('');
+      setRegisteredEmail('');
+      return;
+    }
+
     const saved = getSignupSuccess();
     if (saved) {
       setSubmitted(true);
@@ -73,6 +87,16 @@ export default function JoinForm({
     setSuccessMessage('');
     setRegisteredEmail('');
   }, [location.pathname]);
+
+  const handleModalDismiss = useCallback(() => {
+    onSignupModalClose?.();
+  }, [onSignupModalClose]);
+
+  const { exiting, dismissNow } = useAutoDismiss({
+    active: submitted && isModal,
+    delayMs: 4000,
+    onDismiss: handleModalDismiss,
+  });
 
   useEffect(() => {
     if (!captchaActive) {
@@ -171,6 +195,8 @@ export default function JoinForm({
         questionnaireUrl: response.data?.questionnaire_url,
       });
       setSubmitted(true);
+      onSignupSuccess?.();
+      window.dispatchEvent(new CustomEvent('onboarding-updated'));
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -205,24 +231,32 @@ export default function JoinForm({
   }, [showValidation, errors, captchaRequired]);
 
   if (submitted) {
+    if (!isModal) {
+      return null;
+    }
+
     return (
-      <div className={`join-form join-form--success ${isModal ? 'join-form--modal' : ''} ${className}`}>
-        <div className="join-form__success-message">
-          <CheckCircle2 className="join-form__success-icon" size={48} aria-hidden="true" />
-          <p className="join-form__success-eyebrow">Registration Complete</p>
-          <h3>Sign Up Successful</h3>
-          <p className="join-form__success-lead">
-            {successMessage || 'Please check your email to activate your account.'}
-          </p>
-          {registeredEmail && (
-            <p className="join-form__success-email">
-              A verification email has been sent to <strong>{registeredEmail}</strong>.
-            </p>
-          )}
-          <p className="join-form__success-note">
-            Please activate your account using the link provided in the email.
-          </p>
-        </div>
+      <div className={`join-form join-form--success join-form--modal ${className}`}>
+        <SuccessState
+          icon={CheckCircle2}
+          eyebrow="Registration Complete"
+          title="Sign Up Successful"
+          body={successMessage || 'Please check your email to activate your account.'}
+          meta={
+            registeredEmail ? (
+              <>
+                A verification email has been sent to <strong>{registeredEmail}</strong>.
+              </>
+            ) : undefined
+          }
+          note="Please activate your account using the link provided in the email."
+          autoHint="Returning to home…"
+          iconVariant="violet"
+          exiting={exiting}
+        />
+        <button type="button" className="auth-modal__skip-close" onClick={dismissNow}>
+          Close now
+        </button>
       </div>
     );
   }

@@ -8,7 +8,7 @@ export default function QuestionnaireFooter() {
   return (
     <footer className="survey-footer">
       <div className="survey-footer__inner">
-        <Logo className="survey-footer__logo" />
+        <Logo className="survey-footer__logo" variant="dark" size="sm" />
         <p className="survey-footer__copyright">
           &copy; 2000 - {year} SpadeCommunity&reg; All Rights Reserved
         </p>

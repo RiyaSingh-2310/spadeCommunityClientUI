@@ -1,0 +1,33 @@
+/* Global responsive utilities */
+
+@media (max-width: 480px) {
+  :root {
+    --header-height: 76px;
+  }
+
+  .container,
+  .container-wide,
+  .container-narrow {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .section {
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
+  }
+
+  .section-subtitle {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-8);
+  }
+}
+
+@media (max-width: 374px) {
+  .container,
+  .container-wide,
+  .container-narrow {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+}

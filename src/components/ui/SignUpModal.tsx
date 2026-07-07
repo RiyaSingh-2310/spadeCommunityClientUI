@@ -11,10 +11,12 @@ export default function SignUpModal() {
   const { activeModal, closeModal, switchToLogin } = useAuthModal();
   const isOpen = activeModal === 'signup';
   const [captchaReady, setCaptchaReady] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       setCaptchaReady(false);
+      setIsClosing(false);
       return;
     }
 
@@ -22,19 +24,32 @@ export default function SignUpModal() {
     return () => window.clearTimeout(timer);
   }, [isOpen]);
 
+  const handleModalClose = () => {
+    setIsClosing(true);
+    window.setTimeout(() => {
+      closeModal();
+      setIsClosing(false);
+    }, 380);
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={closeModal}
-      title="Sign Up"
+      onClose={handleModalClose}
+      title="Create your account"
       id="signup-modal"
       keepMounted
+      variant="split"
+      brandTitle="Join a premium research community"
+      brandDescription="Create your profile, verify your email, and start participating in studies that reward your perspective."
+      isClosing={isClosing}
     >
       {isOpen ? (
         <JoinForm
           variant="modal"
           onSwitchToLogin={switchToLogin}
           captchaActive={captchaReady}
+          onSignupModalClose={handleModalClose}
         />
       ) : null}
     </Modal>

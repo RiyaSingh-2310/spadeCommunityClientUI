@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Button from '../components/ui/Button';
+import SuccessState from '../components/ui/SuccessState';
 import { verifyAccount } from '../api/auth';
 import { ApiError } from '../api/ApiError';
+import { useAutoDismiss } from '../hooks/useAutoDismiss';
 import { saveActivationSuccess, wasTokenActivated } from '../utils/activationSession';
 import './Questionnaire.css';
 
@@ -59,6 +61,16 @@ export default function AccountActivation() {
     void runActivation();
   }, [runActivation]);
 
+  const handleContinueHome = useCallback(() => {
+    navigate('/');
+  }, [navigate]);
+
+  const { exiting } = useAutoDismiss({
+    active: status === 'success',
+    delayMs: 5000,
+    onDismiss: handleContinueHome,
+  });
+
   if (status === 'loading') {
     return (
       <div className="activation-page">
@@ -96,18 +108,26 @@ export default function AccountActivation() {
   return (
     <div className="activation-page">
       <div className="activation-page__container">
-        <div className="questionnaire-card questionnaire-card--complete">
-          <CheckCircle2 className="questionnaire-card__success-icon" size={56} />
-          <h2>Account Activated Successfully</h2>
-          <p>Your account has been activated successfully.</p>
-          <p>
-            You may now proceed with your questionnaire invitation from your email.
-          </p>
-          <div className="questionnaire-card__actions questionnaire-card__actions--center">
-            <Button variant="gradient" onClick={() => navigate('/')}>
-              Continue to Home
-            </Button>
-          </div>
+        <div className={`questionnaire-card questionnaire-card--complete questionnaire-card--premium${exiting ? ' questionnaire-card--exiting' : ''}`}>
+          <SuccessState
+            variant="premium"
+            icon={BadgeCheck}
+            iconVariant="violet"
+            eyebrow="Activation Complete"
+            title="Account Activated Successfully"
+            body="Your account has been verified. You may now proceed with your questionnaire invitation from your email."
+            badges={[
+              { label: 'Email Verified', success: true },
+              { label: 'Account Active', success: true },
+            ]}
+            actions={
+              <Button variant="gradient" onClick={handleContinueHome}>
+                Continue to Home
+              </Button>
+            }
+            autoHint="Continuing automatically…"
+            exiting={exiting}
+          />
         </div>
       </div>
     </div>
