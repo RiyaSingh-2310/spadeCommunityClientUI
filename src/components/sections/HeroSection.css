@@ -253,6 +253,10 @@
     align-items: start;
   }
 
+  .hero-v2__panel {
+    margin-top: 52px;
+  }
+
   .hero-v2__inner--member {
     grid-template-columns: 1fr 1fr;
     align-items: stretch;

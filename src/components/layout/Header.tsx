@@ -1,6 +1,6 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { CircleUserRound, Menu, X } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { navLinks } from '../../data/mockData';
 import { useAuthModal } from '../../context/AuthModalContext';
@@ -9,7 +9,12 @@ import './Header.css';
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { openLogin, openSignup } = useAuthModal();
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => window.localStorage.getItem('panelist_ui_logged_in') === 'true'
+  );
+  const [profileOpen, setProfileOpen] = useState(false);
+  const { openLogin } = useAuthModal();
+  const profileMenuRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -19,25 +24,66 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
+    const syncAuthState = () => {
+      setIsLoggedIn(window.localStorage.getItem('panelist_ui_logged_in') === 'true');
+    };
+
+    window.addEventListener('storage', syncAuthState);
+    window.addEventListener('ui-auth-changed', syncAuthState);
+    return () => {
+      window.removeEventListener('storage', syncAuthState);
+      window.removeEventListener('ui-auth-changed', syncAuthState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!profileOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [profileOpen]);
+
+  useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
   }, [menuOpen]);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setProfileOpen(false);
+  };
 
   const handleAuthAction = (action: 'login' | 'signup') => {
     closeMenu();
     if (action === 'login') openLogin();
-    else openSignup();
+  };
+
+  const logout = () => {
+    window.localStorage.removeItem('panelist_ui_logged_in');
+    window.dispatchEvent(new CustomEvent('ui-auth-changed'));
+    setProfileOpen(false);
+    closeMenu();
   };
 
   const routeLinks = navLinks.filter((link): link is { label: string; path: string } => 'path' in link);
-  const actionLinks = navLinks.filter(
-    (link): link is { label: string; action: 'login' | 'signup' } =>
-      'action' in link && link.action !== 'signup'
-  );
   const mobileLinks = navLinks.filter(
     (link) => !('action' in link && link.action === 'signup')
   );
@@ -81,20 +127,38 @@ export default function Header() {
                     </NavLink>
                   </li>
                 ))}
+                {isLoggedIn ? (
+                  <li className="site-header__profile" ref={profileMenuRef}>
+                    <button
+                      type="button"
+                      className={`site-header__profile-trigger${profileOpen ? ' site-header__profile-trigger--open' : ''}`}
+                      onClick={() => setProfileOpen((v) => !v)}
+                      aria-expanded={profileOpen}
+                      aria-label="Open profile menu"
+                    >
+                      <CircleUserRound size={20} />
+                    </button>
+                    <div className={`site-header__profile-menu${profileOpen ? ' site-header__profile-menu--open' : ''}`}>
+                      <button type="button" className="site-header__profile-item" disabled>
+                        Profile
+                      </button>
+                      <button type="button" className="site-header__profile-item" onClick={logout}>
+                        Logout
+                      </button>
+                    </div>
+                  </li>
+                ) : (
+                  <li>
+                    <button
+                      type="button"
+                      className="site-header__link site-header__link--button"
+                      onClick={() => handleAuthAction('login')}
+                    >
+                      Login
+                    </button>
+                  </li>
+                )}
               </ul>
-
-              <div className="site-header__actions">
-                {actionLinks.map((link) => (
-                  <button
-                    key={link.label}
-                    type="button"
-                    className={`site-header__action site-header__action--${link.action}`}
-                    onClick={() => handleAuthAction(link.action)}
-                  >
-                    {link.label}
-                  </button>
-                ))}
-              </div>
             </nav>
           </div>
 
@@ -124,14 +188,25 @@ export default function Header() {
                       {link.label}
                     </NavLink>
                   ) : (
-                    <button
-                      type="button"
-                      className={`site-header__dropdown-action site-header__dropdown-action--${link.action}`}
-                      onClick={() => handleAuthAction(link.action)}
-                      tabIndex={menuOpen ? 0 : -1}
-                    >
-                      {link.label}
-                    </button>
+                    isLoggedIn ? (
+                      <button
+                        type="button"
+                        className="site-header__dropdown-link"
+                        onClick={logout}
+                        tabIndex={menuOpen ? 0 : -1}
+                      >
+                        Logout
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="site-header__dropdown-link"
+                        onClick={() => handleAuthAction(link.action)}
+                        tabIndex={menuOpen ? 0 : -1}
+                      >
+                        {link.label}
+                      </button>
+                    )
                   )}
                 </li>
               ))}

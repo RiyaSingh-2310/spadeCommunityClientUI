@@ -10,6 +10,7 @@ import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import './AuthModal.css';
 
 const AUTO_CLOSE_MS = 3500;
+const UI_AUTH_STATE_KEY = 'panelist_ui_logged_in';
 
 export default function LoginModal() {
   const { activeModal, closeModal, switchToSignup } = useAuthModal();
@@ -48,6 +49,8 @@ export default function LoginModal() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    window.localStorage.setItem(UI_AUTH_STATE_KEY, 'true');
+    window.dispatchEvent(new CustomEvent('ui-auth-changed'));
     setSubmitted(true);
   };
 
