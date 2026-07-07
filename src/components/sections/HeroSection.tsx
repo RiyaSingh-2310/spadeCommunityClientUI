@@ -112,7 +112,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="hero-v2__metrics">
+          {/* <div className="hero-v2__metrics">
             {statistics.slice(0, 3).map((stat) => (
               <div key={stat.id} className="hero-v2__metric">
                 <strong>
@@ -122,7 +122,7 @@ export default function HeroSection() {
                 <span>{stat.label}</span>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         <div

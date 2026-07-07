@@ -151,7 +151,7 @@ export default function Header() {
                   <li>
                     <button
                       type="button"
-                      className="site-header__link site-header__link--button"
+                      className="site-header__login-cta"
                       onClick={() => handleAuthAction('login')}
                     >
                       Login
@@ -200,7 +200,7 @@ export default function Header() {
                     ) : (
                       <button
                         type="button"
-                        className="site-header__dropdown-link"
+                        className="site-header__dropdown-login-cta"
                         onClick={() => handleAuthAction(link.action)}
                         tabIndex={menuOpen ? 0 : -1}
                       >

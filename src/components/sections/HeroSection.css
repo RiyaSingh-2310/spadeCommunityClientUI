@@ -153,14 +153,18 @@
 .hero-v2__trust-item {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-size: 0.78rem;
+  gap: 12px;
+  padding: 12px 18px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
   border-radius: var(--radius-full);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-v2__trust-item svg {
+  flex-shrink: 0;
 }
 
 .hero-v2__metrics {
@@ -171,6 +175,9 @@
 }
 
 .hero-v2__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.06);
@@ -182,7 +189,7 @@
   font-size: 1.35rem;
   font-weight: 800;
   color: var(--color-white);
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 
 .hero-v2__metric span {
@@ -328,7 +335,8 @@
 
   .hero-v2__trust-item {
     font-size: 0.72rem;
-    padding: 8px 12px;
+    padding: 10px 14px;
+    gap: 10px;
   }
 
   .hero-v2__orb--1 {

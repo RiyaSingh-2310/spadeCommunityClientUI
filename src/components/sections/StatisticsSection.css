@@ -23,6 +23,10 @@
 }
 
 .statistics__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
   padding: var(--space-8) var(--space-5);
   text-align: center;
   border-radius: var(--radius-2xl);
@@ -43,7 +47,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: 0;
   border-radius: var(--radius-md);
   color: var(--color-secondary);
   background: rgba(79, 70, 229, 0.08);
@@ -59,9 +63,14 @@
   font-size: var(--font-size-sm);
   font-weight: 700;
   color: var(--color-gray-600);
+  margin-top: 4px;
 }
 
-.counter__value { color: var(--color-primary); }
+.counter__value {
+  display: block;
+  color: var(--color-primary);
+  line-height: 1.1;
+}
 
 @media (min-width: 900px) {
   .statistics__grid { grid-template-columns: repeat(4, 1fr); }
