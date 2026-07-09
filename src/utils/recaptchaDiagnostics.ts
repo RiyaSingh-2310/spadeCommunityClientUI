@@ -1,3 +1,4 @@
+import { getApiBaseUrl, isApiUsingProductionFallback } from '../config/api';
 import {
   EXPECTED_RECAPTCHA_SITE_KEY_PREFIX,
   getRecaptchaSiteKey,
@@ -31,6 +32,8 @@ export interface RecaptchaDiagnosticReport {
   buildInjectionNote: string;
   vercelNote: string;
   domainRegistrationHint: string | null;
+  apiBaseUrl: string;
+  apiUsesProductionFallback: boolean;
   diagnosticsEnabled: boolean;
 }
 
@@ -73,6 +76,8 @@ export function getRecaptchaDiagnosticReport(): RecaptchaDiagnosticReport {
     vercelNote:
       'Set VITE_RECAPTCHA_SITE_KEY in Vercel → Project Settings → Environment Variables for Production and Preview, then redeploy.',
     domainRegistrationHint: hostname !== 'n/a' ? getDomainRegistrationHint(hostname) : null,
+    apiBaseUrl: typeof window !== 'undefined' ? getApiBaseUrl() : 'n/a',
+    apiUsesProductionFallback: isApiUsingProductionFallback(),
     diagnosticsEnabled: isRecaptchaDiagnosticsEnabled(),
   };
 }
@@ -127,6 +132,13 @@ export function runRecaptchaStartupDiagnostics(): void {
       hint: report.domainRegistrationHint,
     });
   }
+
+  console.info(`${PREFIX} API configuration`, {
+    apiBaseUrl: report.apiBaseUrl,
+    apiUsesProductionFallback: report.apiUsesProductionFallback,
+    note:
+      'If signup fails after reCAPTCHA with a connection error, verify VITE_API_BASE_URL in Vercel — not the reCAPTCHA site key.',
+  });
 
   logRecaptchaDiag('Diagnostic report', report as unknown as Record<string, unknown>);
 

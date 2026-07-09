@@ -6,10 +6,10 @@ import Button from './Button';
 import Captcha from './Captcha';
 import SuccessState from './SuccessState';
 import { signup } from '../../api/auth';
-import { ApiError } from '../../api/ApiError';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
+import { getSignupRequestErrorMessage } from '../../utils/apiErrors';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getMemberComplete } from '../../utils/memberSession';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
@@ -203,15 +203,7 @@ export default function JoinForm({
       onSignupSuccess?.();
       window.dispatchEvent(new CustomEvent('onboarding-updated'));
     } catch (error) {
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : error instanceof TypeError
-            ? 'Network error. Please check your connection and try again.'
-          : error instanceof Error
-            ? error.message
-            : 'Signup failed. Please try again.';
-      setSubmitError(message);
+      setSubmitError(getSignupRequestErrorMessage(error));
       resetCaptcha();
     } finally {
       setIsSubmitting(false);

@@ -27,6 +27,19 @@
   margin: var(--space-4) 0;
 }
 
+.footer__brand .logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: min(320px, 100%);
+}
+
+.footer__brand .logo__image {
+  height: clamp(42px, 5vw, 56px);
+  width: auto;
+  max-width: 100%;
+}
+
 .footer__legal a {
   color: var(--color-accent);
   font-weight: 600;
@@ -107,6 +120,11 @@
 
   .footer__brand {
     text-align: center;
+  }
+
+  .footer__brand .logo {
+    justify-content: center;
+    margin-inline: auto;
   }
 
   .footer__tagline {

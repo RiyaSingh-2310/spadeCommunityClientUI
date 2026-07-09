@@ -179,7 +179,29 @@
   border-radius: 999px;
   color: var(--color-gray-600);
   background: rgba(15, 23, 42, 0.04);
+  overflow: hidden;
   transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.site-header__profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.site-header__profile-initials {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--color-secondary);
+}
+
+.site-header__profile-fallback-icon {
+  display: none;
+}
+
+.site-header__profile-trigger:not(:has(.site-header__profile-avatar)):not(:has(.site-header__profile-initials)) .site-header__profile-fallback-icon {
+  display: block;
 }
 
 .site-header__profile-trigger:hover,
@@ -221,6 +243,9 @@
   font-weight: 600;
   color: var(--color-gray-700);
   background: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .site-header__profile-item:hover:not(:disabled) {

@@ -1,18 +1,25 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { CircleUserRound, Menu, X } from 'lucide-react';
+import { LogOut, Menu, Settings, X } from 'lucide-react';
 import Logo from '../ui/Logo';
-import { navLinks } from '../../data/mockData';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
 import './Header.css';
+
+const publicLinks = [
+  { label: 'Home', path: '/' },
+  { label: 'Privacy Policy', path: '/privacy-policy' },
+  { label: 'About Us', path: '/about' },
+  { label: 'FAQ', path: '/faq' },
+  { label: 'Contact', path: '/contact' },
+];
 
 export default function Header() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated, logout, user } = usePanelistAuth();
   const [profileOpen, setProfileOpen] = useState(false);
+  const { isAuthenticated, logout, user } = usePanelistAuth();
   const { openLogin } = useAuthModal();
   const profileMenuRef = useRef<HTMLLIElement>(null);
 
@@ -33,9 +40,7 @@ export default function Header() {
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setProfileOpen(false);
-      }
+      if (event.key === 'Escape') setProfileOpen(false);
     };
 
     document.addEventListener('mousedown', handleOutsideClick);
@@ -58,9 +63,9 @@ export default function Header() {
     setProfileOpen(false);
   };
 
-  const handleAuthAction = (action: 'login' | 'signup') => {
+  const handleAuthAction = () => {
     closeMenu();
-    if (action === 'login') openLogin();
+    openLogin();
   };
 
   const handleLogout = () => {
@@ -70,10 +75,16 @@ export default function Header() {
     navigate('/');
   };
 
-  const routeLinks = navLinks.filter((link): link is { label: string; path: string } => 'path' in link);
-  const mobileLinks = navLinks.filter(
-    (link) => !('action' in link && link.action === 'signup')
-  );
+  const routeLinks = isAuthenticated
+    ? [{ label: 'Dashboard', path: '/dashboard' }, ...publicLinks]
+    : publicLinks;
+
+  const initials = (user?.name || 'P')
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header
@@ -119,35 +130,43 @@ export default function Header() {
                     <button
                       type="button"
                       className={`site-header__profile-trigger${profileOpen ? ' site-header__profile-trigger--open' : ''}`}
-                      onClick={() => setProfileOpen((v) => !v)}
+                      onClick={() => setProfileOpen((value) => !value)}
                       aria-expanded={profileOpen}
-                      aria-label="Open profile menu"
+                      aria-label="Open account menu"
                     >
-                      <CircleUserRound size={20} />
+                      {user?.profile_image || user?.photo ? (
+                        <img
+                          src={user.profile_image ?? user.photo ?? ''}
+                          alt=""
+                          className="site-header__profile-avatar"
+                        />
+                      ) : (
+                        <span className="site-header__profile-initials">{initials}</span>
+                      )}
                     </button>
-                    <div className={`site-header__profile-menu${profileOpen ? ' site-header__profile-menu--open' : ''}`}>
+                    <div
+                      className={`site-header__profile-menu${profileOpen ? ' site-header__profile-menu--open' : ''}`}
+                    >
                       <button
                         type="button"
                         className="site-header__profile-item"
                         onClick={() => {
                           setProfileOpen(false);
-                          navigate('/member');
+                          navigate('/settings');
                         }}
                       >
-                        {user?.name ? `${user.name}'s Portal` : 'Panelist Portal'}
+                        <Settings size={15} aria-hidden="true" />
+                        Settings
                       </button>
                       <button type="button" className="site-header__profile-item" onClick={handleLogout}>
+                        <LogOut size={15} aria-hidden="true" />
                         Logout
                       </button>
                     </div>
                   </li>
                 ) : (
                   <li>
-                    <button
-                      type="button"
-                      className="site-header__login-cta"
-                      onClick={() => handleAuthAction('login')}
-                    >
+                    <button type="button" className="site-header__login-cta" onClick={handleAuthAction}>
                       Login
                     </button>
                   </li>
@@ -163,47 +182,72 @@ export default function Header() {
             aria-hidden={!menuOpen}
           >
             <ul className="site-header__dropdown-list">
-              {mobileLinks.map((link, index) => (
+              {routeLinks.map((link, index) => (
                 <li
                   key={link.label}
                   className="site-header__dropdown-item"
                   style={{ '--item-index': index } as CSSProperties}
                 >
-                  {'path' in link ? (
-                    <NavLink
-                      to={link.path}
-                      className={({ isActive }) =>
-                        `site-header__dropdown-link${isActive ? ' site-header__dropdown-link--active' : ''}`
-                      }
-                      onClick={closeMenu}
-                      end={link.path === '/'}
-                      tabIndex={menuOpen ? 0 : -1}
-                    >
-                      {link.label}
-                    </NavLink>
-                  ) : (
-                    isAuthenticated ? (
-                      <button
-                        type="button"
-                        className="site-header__dropdown-link"
-                        onClick={handleLogout}
-                        tabIndex={menuOpen ? 0 : -1}
-                      >
-                        Logout
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="site-header__dropdown-login-cta"
-                        onClick={() => handleAuthAction(link.action)}
-                        tabIndex={menuOpen ? 0 : -1}
-                      >
-                        {link.label}
-                      </button>
-                    )
-                  )}
+                  <NavLink
+                    to={link.path}
+                    className={({ isActive }) =>
+                      `site-header__dropdown-link${isActive ? ' site-header__dropdown-link--active' : ''}`
+                    }
+                    onClick={closeMenu}
+                    end={link.path === '/'}
+                    tabIndex={menuOpen ? 0 : -1}
+                  >
+                    {link.label}
+                  </NavLink>
                 </li>
               ))}
+              {isAuthenticated ? (
+                <>
+                  <li
+                    className="site-header__dropdown-item"
+                    style={{ '--item-index': routeLinks.length } as CSSProperties}
+                  >
+                    <button
+                      type="button"
+                      className="site-header__dropdown-link"
+                      onClick={() => {
+                        closeMenu();
+                        navigate('/settings');
+                      }}
+                      tabIndex={menuOpen ? 0 : -1}
+                    >
+                      Settings
+                    </button>
+                  </li>
+                  <li
+                    className="site-header__dropdown-item"
+                    style={{ '--item-index': routeLinks.length + 1 } as CSSProperties}
+                  >
+                    <button
+                      type="button"
+                      className="site-header__dropdown-link"
+                      onClick={handleLogout}
+                      tabIndex={menuOpen ? 0 : -1}
+                    >
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li
+                  className="site-header__dropdown-item"
+                  style={{ '--item-index': routeLinks.length } as CSSProperties}
+                >
+                  <button
+                    type="button"
+                    className="site-header__dropdown-login-cta"
+                    onClick={handleAuthAction}
+                    tabIndex={menuOpen ? 0 : -1}
+                  >
+                    Login
+                  </button>
+                </li>
+              )}
             </ul>
           </nav>
         </div>

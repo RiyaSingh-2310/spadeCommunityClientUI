@@ -1,7 +1,6 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import QuestionnaireLayout from './components/layout/QuestionnaireLayout';
-import PanelistPortalLayout from './components/panelist-portal/PanelistPortalLayout';
 import RequirePanelistAuth from './components/panelist-portal/RequirePanelistAuth';
 import { PanelistAuthProvider } from './context/PanelistAuthContext';
 import Home from './pages/Home';
@@ -14,25 +13,9 @@ import QuestionnaireGroupPublic from './pages/QuestionnaireGroupPublic';
 import { LoginRedirect, JoinRedirect } from './pages/AuthRedirect';
 import AccountActivation from './pages/AccountActivation';
 import PanelistDashboardPage from './pages/panelist/PanelistDashboardPage';
-import PanelistProfilePage from './pages/panelist/PanelistProfilePage';
-import PanelistPasswordPage from './pages/panelist/PanelistPasswordPage';
-import PanelistRewardsPage from './pages/panelist/PanelistRewardsPage';
+import PanelistSettingsPage from './pages/panelist/PanelistSettingsPage';
 
 const router = createBrowserRouter([
-  {
-    element: <RequirePanelistAuth />,
-    children: [
-      {
-        element: <PanelistPortalLayout />,
-        children: [
-          { path: '/member', element: <PanelistDashboardPage /> },
-          { path: '/member/profile', element: <PanelistProfilePage /> },
-          { path: '/member/password', element: <PanelistPasswordPage /> },
-          { path: '/member/rewards', element: <PanelistRewardsPage /> },
-        ],
-      },
-    ],
-  },
   {
     element: <QuestionnaireLayout />,
     children: [
@@ -54,6 +37,17 @@ const router = createBrowserRouter([
       { path: '/privacy-policy', element: <PrivacyPolicy /> },
       { path: '/login', element: <LoginRedirect /> },
       { path: '/join', element: <JoinRedirect /> },
+      {
+        element: <RequirePanelistAuth />,
+        children: [
+          { path: '/dashboard', element: <PanelistDashboardPage /> },
+          { path: '/settings', element: <PanelistSettingsPage /> },
+          { path: '/member', element: <Navigate to="/dashboard" replace /> },
+          { path: '/member/profile', element: <Navigate to="/settings" replace /> },
+          { path: '/member/password', element: <Navigate to="/settings" replace /> },
+          { path: '/member/rewards', element: <Navigate to="/dashboard" replace /> },
+        ],
+      },
     ],
   },
 ]);

@@ -8,11 +8,8 @@ import SocialLoginButtons from './SocialLoginButtons';
 import SuccessState from './SuccessState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
-import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import { ApiError } from '../../api/ApiError';
 import './AuthModal.css';
-
-const AUTO_CLOSE_MS = 2500;
 
 export default function LoginModal() {
   const navigate = useNavigate();
@@ -41,15 +38,6 @@ export default function LoginModal() {
     window.setTimeout(handleClose, 380);
   }, [handleClose]);
 
-  const { exiting, dismissNow } = useAutoDismiss({
-    active: submitted && isOpen,
-    delayMs: AUTO_CLOSE_MS,
-    onDismiss: () => {
-      initiateClose();
-      navigate('/member');
-    },
-  });
-
   useEffect(() => {
     if (!isOpen) {
       setSubmitted(false);
@@ -66,6 +54,10 @@ export default function LoginModal() {
     try {
       await login(email.trim(), password);
       setSubmitted(true);
+      window.setTimeout(() => {
+        initiateClose();
+        navigate('/dashboard');
+      }, 320);
     } catch (submitError) {
       if (submitError instanceof ApiError && submitError.status === 403) {
         setError(
@@ -100,9 +92,9 @@ export default function LoginModal() {
           icon={CheckCircle2}
           eyebrow="Signed In"
           title="Welcome Back"
-          body="Redirecting you to your Panelist Portal..."
+          body="Redirecting you to your dashboard..."
           autoHint="Opening your dashboard…"
-          exiting={exiting || isClosing}
+          exiting={isClosing}
         />
       ) : (
         <>
@@ -148,8 +140,8 @@ export default function LoginModal() {
           type="button"
           className="auth-modal__skip-close"
           onClick={() => {
-            dismissNow();
-            navigate('/member');
+            initiateClose();
+            navigate('/dashboard');
           }}
         >
           Open dashboard now

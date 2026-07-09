@@ -3,8 +3,12 @@ export interface PanelistUser {
   name: string;
   email: string;
   balance_point: number;
+  phone?: string | null;
+  status?: string | null;
+  created_at?: string;
   questionnaire?: string;
   questionnaire_url?: string;
+  photo?: string | null;
   profile_image?: string | null;
 }
 
