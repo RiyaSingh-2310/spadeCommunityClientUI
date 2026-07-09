@@ -92,7 +92,17 @@
 
 .rewards-v2__partner:hover { transform: translateY(-4px) scale(1.02); }
 
-.rewards-v2__partner img { max-height: 44px; width: auto; }
+.rewards-v2__partner-icon { color: #0f172a; }
+
+.rewards-v2__partner img {
+  max-height: 44px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+}
 
 @media (min-width: 768px) {
   .rewards-v2__types { grid-template-columns: repeat(4, 1fr); }
@@ -101,7 +111,7 @@
 
 @media (max-width: 480px) {
   .rewards-v2__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .rewards-v2__partner {

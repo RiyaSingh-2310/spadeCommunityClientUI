@@ -62,6 +62,11 @@ export function unregisterRecaptchaWidget(container: HTMLElement) {
   delete container.dataset.recaptchaWidgetId;
 }
 
+export function clearRecaptchaContainer(container: HTMLElement) {
+  unregisterRecaptchaWidget(container);
+  container.replaceChildren();
+}
+
 export function whenRecaptchaReady(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (!window.grecaptcha?.ready) {
@@ -82,7 +87,16 @@ export function loadRecaptchaScript(): Promise<void> {
     return scriptLoadPromise;
   }
 
-  scriptLoadPromise = new Promise((resolve, reject) => {
+  scriptLoadPromise = loadRecaptchaScriptWithRetry(0);
+
+  return scriptLoadPromise;
+}
+
+const SCRIPT_LOAD_MAX_RETRIES = 2;
+const SCRIPT_LOAD_RETRY_DELAY_MS = 1500;
+
+function loadRecaptchaScriptWithRetry(attempt: number): Promise<void> {
+  return new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>('script[data-recaptcha="true"]');
 
     const finish = () => {
@@ -91,10 +105,19 @@ export function loadRecaptchaScript(): Promise<void> {
           logRecaptchaDiag('Script loaded', {
             scriptUrl: RECAPTCHA_SCRIPT_URL,
             grecaptchaAvailable: Boolean(window.grecaptcha?.render),
+            attempt,
           });
           resolve();
         })
         .catch((error) => {
+          if (attempt < SCRIPT_LOAD_MAX_RETRIES) {
+            scriptLoadPromise = null;
+            window.setTimeout(() => {
+              scriptLoadPromise = loadRecaptchaScriptWithRetry(attempt + 1);
+              scriptLoadPromise.then(resolve).catch(reject);
+            }, SCRIPT_LOAD_RETRY_DELAY_MS * (attempt + 1));
+            return;
+          }
           scriptLoadPromise = null;
           reject(error);
         });
@@ -122,6 +145,15 @@ export function loadRecaptchaScript(): Promise<void> {
       existing.addEventListener(
         'error',
         () => {
+          if (attempt < SCRIPT_LOAD_MAX_RETRIES) {
+            existing.remove();
+            scriptLoadPromise = null;
+            window.setTimeout(() => {
+              scriptLoadPromise = loadRecaptchaScriptWithRetry(attempt + 1);
+              scriptLoadPromise.then(resolve).catch(reject);
+            }, SCRIPT_LOAD_RETRY_DELAY_MS * (attempt + 1));
+            return;
+          }
           scriptLoadPromise = null;
           reject(new Error('Failed to load reCAPTCHA script'));
         },
@@ -142,13 +174,20 @@ export function loadRecaptchaScript(): Promise<void> {
     script.dataset.recaptcha = 'true';
     script.onload = () => script.setAttribute('data-loaded', 'true');
     script.onerror = () => {
+      script.remove();
+      if (attempt < SCRIPT_LOAD_MAX_RETRIES) {
+        scriptLoadPromise = null;
+        window.setTimeout(() => {
+          scriptLoadPromise = loadRecaptchaScriptWithRetry(attempt + 1);
+          scriptLoadPromise.then(resolve).catch(reject);
+        }, SCRIPT_LOAD_RETRY_DELAY_MS * (attempt + 1));
+        return;
+      }
       scriptLoadPromise = null;
       reject(new Error('Failed to load reCAPTCHA script'));
     };
     document.head.appendChild(script);
   });
-
-  return scriptLoadPromise;
 }
 
 export function preloadRecaptchaScript(): void {
@@ -226,7 +265,7 @@ async function renderNewWidget(
       resetRecaptcha(existingId);
       return existingId;
     }
-    throw new Error('reCAPTCHA has already been rendered in this element');
+    clearRecaptchaContainer(container);
   }
 
   const widgetId = window.grecaptcha.render(container, buildRenderOptions(options));
@@ -307,6 +346,6 @@ export function softResetRecaptchaWidget(widgetId: number | null) {
 export function hardResetRecaptchaWidget(container: HTMLElement | null, widgetId: number | null) {
   resetRecaptcha(widgetId);
   if (container) {
-    unregisterRecaptchaWidget(container);
+    clearRecaptchaContainer(container);
   }
 }

@@ -1,5 +1,14 @@
 .auth-modal__form { display: flex; flex-direction: column; gap: 4px; }
 
+.auth-modal__error {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
 .auth-modal__links {
   display: flex;
   justify-content: space-between;

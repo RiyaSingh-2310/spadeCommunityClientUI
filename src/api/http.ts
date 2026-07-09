@@ -1,4 +1,5 @@
 import { getApiBaseUrl, getApiBearerToken } from '../config/api';
+import { getPanelistAuthToken } from '../utils/panelistSession';
 import { ApiError } from './ApiError';
 
 interface ApiRequestOptions {
@@ -17,7 +18,7 @@ function extractMessage(data: unknown, fallback: string): string {
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token } = options;
-  const bearerToken = token ?? getApiBearerToken();
+  const bearerToken = token ?? getPanelistAuthToken() ?? getApiBearerToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

@@ -1,31 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { BadgeCheck, ClipboardList, Sparkles } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useQuestionnaire } from '../hooks/useQuestionnaire';
-import { useAutoDismiss } from '../hooks/useAutoDismiss';
+import { useEffect, useMemo, useState } from 'react';
+import { BadgeCheck, ClipboardList } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import ProgressIndicator from '../components/questionnaire/ProgressIndicator';
 import QuestionRenderer from '../components/questionnaire/QuestionRenderer';
 import QuestionnaireNavigation from '../components/questionnaire/QuestionnaireNavigation';
 import Button from '../components/ui/Button';
 import SuccessState from '../components/ui/SuccessState';
-import { clearOnboardingState } from '../utils/clearOnboardingState';
-import { saveMemberComplete } from '../utils/memberSession';
-import { getSignupSuccess } from '../utils/signupSession';
-import { decodeSecureToken } from '../utils/secureToken';
+import { useQuestionnaireGroup } from '../hooks/useQuestionnaireGroup';
 import './Questionnaire.css';
 
-export default function Questionnaire() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const params = useParams<{ secureToken?: string }>();
-  const query = new URLSearchParams(location.search);
-  const tokenFromQuery = decodeSecureToken(query.get('token') ?? '') || (query.get('Userid') ?? '');
-  const decodedPathToken = decodeSecureToken(params.secureToken ?? '');
-  const userToken = tokenFromQuery || decodedPathToken;
-  const verificationParams = userToken ? { Userid: userToken } : undefined;
-  const flow = useQuestionnaire({ verificationParams });
+export default function QuestionnaireGroupPublic() {
+  const { groupId = '' } = useParams<{ groupId: string }>();
   const [animating, setAnimating] = useState(false);
-  const [memberSaved, setMemberSaved] = useState(false);
   const {
     questionnaire,
     loading,
@@ -44,7 +30,7 @@ export default function Questionnaire() {
     goPrevious,
     submit,
     retryLoad,
-  } = flow;
+  } = useQuestionnaireGroup(groupId);
 
   useEffect(() => {
     setAnimating(true);
@@ -52,35 +38,11 @@ export default function Questionnaire() {
     return () => clearTimeout(timer);
   }, [currentIndex]);
 
-  const handleReturnHome = useCallback(() => {
-    const signup = getSignupSuccess();
-    saveMemberComplete({
-      email: signup?.email,
-      completedAt: new Date().toISOString(),
-    });
-    clearOnboardingState();
-    window.dispatchEvent(new CustomEvent('onboarding-updated'));
-    navigate('/');
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!isComplete || memberSaved) return;
-
-    const signup = getSignupSuccess();
-    saveMemberComplete({
-      email: signup?.email,
-      completedAt: new Date().toISOString(),
-    });
-    clearOnboardingState();
-    setMemberSaved(true);
-    window.dispatchEvent(new CustomEvent('onboarding-updated'));
-  }, [isComplete, memberSaved]);
-
-  const { exiting: completionExiting } = useAutoDismiss({
-    active: isComplete,
-    delayMs: 5000,
-    onDismiss: handleReturnHome,
-  });
+  const languageLabel = useMemo(() => {
+    const raw = String(questionnaire?.language ?? '').trim();
+    if (!raw) return '—';
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }, [questionnaire?.language]);
 
   if (loading) {
     return (
@@ -101,7 +63,7 @@ export default function Questionnaire() {
       <div className="questionnaire-page">
         <div className="questionnaire-page__container">
           <div className="questionnaire-card questionnaire-card--error">
-            <h2>Unable to load questionnaire</h2>
+            <h2>Unable to load questionnaire group</h2>
             <p>{error}</p>
             <div className="questionnaire-card__actions">
               <Button variant="outline" onClick={() => void retryLoad()}>
@@ -119,13 +81,8 @@ export default function Questionnaire() {
       <div className="questionnaire-page">
         <div className="questionnaire-page__container">
           <div className="questionnaire-card questionnaire-card--error">
-            <h2>Unable to access questionnaire</h2>
-            <p>Missing or invalid questionnaire token. Please use the questionnaire link from your email.</p>
-            <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="outline" onClick={handleReturnHome}>
-                Return Home
-              </Button>
-            </div>
+            <h2>Unable to access questionnaire group</h2>
+            <p>This questionnaire group link is invalid or inactive.</p>
           </div>
         </div>
       </div>
@@ -136,32 +93,28 @@ export default function Questionnaire() {
     return (
       <div className="questionnaire-page questionnaire-page--complete">
         <div className="questionnaire-page__container">
-          <div className={`questionnaire-card questionnaire-card--complete questionnaire-card--premium${completionExiting ? ' questionnaire-card--exiting' : ''}`}>
+          <div className="questionnaire-card questionnaire-card--complete questionnaire-card--premium">
             <SuccessState
               variant="premium"
               icon={BadgeCheck}
               iconVariant="accent"
-              eyebrow="Survey Complete"
-              title="Thank You for Participating"
-              body={completionMessage || 'Your responses have been recorded successfully.'}
-              badges={[
-                { label: 'Profile Complete', success: true },
-                { label: 'Rewards Eligible', success: true },
-                { label: 'Member Active', success: true },
-              ]}
-              note={
-                <>
-                  <Sparkles size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-                  You&apos;re all set. New study invitations will arrive based on your profile.
-                </>
-              }
+              eyebrow="Questionnaire Submitted"
+              title="Thank You for Your Response"
+              body={completionMessage || 'Your answers have been saved successfully.'}
+              badges={[{ label: 'Responses Saved', success: true }]}
+              note="You can now close this page."
               actions={
-                <Button variant="gradient" onClick={handleReturnHome}>
-                  Return Home
+                <Button
+                  variant="gradient"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      window.close();
+                    }
+                  }}
+                >
+                  Close
                 </Button>
               }
-              autoHint="Returning home automatically…"
-              exiting={completionExiting}
             />
           </div>
         </div>
@@ -176,7 +129,7 @@ export default function Questionnaire() {
           <header className="questionnaire-card__header">
             <ClipboardList className="questionnaire-card__header-icon" size={32} aria-hidden="true" />
             <h1 className="questionnaire-card__title">{questionnaire.title}</h1>
-            <p className="questionnaire-card__description">{questionnaire.description}</p>
+            <p className="questionnaire-card__description">Language: {languageLabel}</p>
           </header>
 
           <ProgressIndicator

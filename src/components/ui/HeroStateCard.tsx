@@ -71,7 +71,7 @@ export default function HeroStateCard({ phase, email }: HeroStateCardProps) {
         <button
           type="button"
           className="hero-state__cta hero-state__cta--member"
-          onClick={() => navigate('/portal')}
+          onClick={() => navigate('/member')}
         >
           Go to Dashboard
           <ArrowRight size={18} />

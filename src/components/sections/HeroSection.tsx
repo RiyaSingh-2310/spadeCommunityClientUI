@@ -4,7 +4,6 @@ import JoinForm from '../ui/JoinForm';
 import HeroStateCard from '../ui/HeroStateCard';
 import { useOnboardingState } from '../../hooks/useOnboardingState';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
-import { statistics } from '../../data/mockData';
 import './HeroSection.css';
 
 const highlights = [
@@ -136,7 +135,7 @@ export default function HeroSection() {
                 <div className="hero-v2__panel-header">
                   <div>
                     <p className="hero-v2__panel-eyebrow">Start in minutes</p>
-                    <h2 className="hero-v2__panel-title">Create your profile</h2>
+                    <h2 className="hero-v2__panel-title">Join Our Survey</h2>
                   </div>
                   <span className="hero-v2__panel-badge">+$2 Bonus</span>
                 </div>

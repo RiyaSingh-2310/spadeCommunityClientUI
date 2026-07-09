@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { CircleUserRound, Menu, X } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { navLinks } from '../../data/mockData';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { usePanelistAuth } from '../../context/PanelistAuthContext';
 import './Header.css';
 
 export default function Header() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => window.localStorage.getItem('panelist_ui_logged_in') === 'true'
-  );
+  const { isAuthenticated, logout, user } = usePanelistAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const { openLogin } = useAuthModal();
   const profileMenuRef = useRef<HTMLLIElement>(null);
@@ -21,19 +21,6 @@ export default function Header() {
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const syncAuthState = () => {
-      setIsLoggedIn(window.localStorage.getItem('panelist_ui_logged_in') === 'true');
-    };
-
-    window.addEventListener('storage', syncAuthState);
-    window.addEventListener('ui-auth-changed', syncAuthState);
-    return () => {
-      window.removeEventListener('storage', syncAuthState);
-      window.removeEventListener('ui-auth-changed', syncAuthState);
-    };
   }, []);
 
   useEffect(() => {
@@ -76,11 +63,11 @@ export default function Header() {
     if (action === 'login') openLogin();
   };
 
-  const logout = () => {
-    window.localStorage.removeItem('panelist_ui_logged_in');
-    window.dispatchEvent(new CustomEvent('ui-auth-changed'));
+  const handleLogout = () => {
+    logout();
     setProfileOpen(false);
     closeMenu();
+    navigate('/');
   };
 
   const routeLinks = navLinks.filter((link): link is { label: string; path: string } => 'path' in link);
@@ -127,7 +114,7 @@ export default function Header() {
                     </NavLink>
                   </li>
                 ))}
-                {isLoggedIn ? (
+                {isAuthenticated ? (
                   <li className="site-header__profile" ref={profileMenuRef}>
                     <button
                       type="button"
@@ -139,10 +126,17 @@ export default function Header() {
                       <CircleUserRound size={20} />
                     </button>
                     <div className={`site-header__profile-menu${profileOpen ? ' site-header__profile-menu--open' : ''}`}>
-                      <button type="button" className="site-header__profile-item" disabled>
-                        Profile
+                      <button
+                        type="button"
+                        className="site-header__profile-item"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          navigate('/member');
+                        }}
+                      >
+                        {user?.name ? `${user.name}'s Portal` : 'Panelist Portal'}
                       </button>
-                      <button type="button" className="site-header__profile-item" onClick={logout}>
+                      <button type="button" className="site-header__profile-item" onClick={handleLogout}>
                         Logout
                       </button>
                     </div>
@@ -188,11 +182,11 @@ export default function Header() {
                       {link.label}
                     </NavLink>
                   ) : (
-                    isLoggedIn ? (
+                    isAuthenticated ? (
                       <button
                         type="button"
                         className="site-header__dropdown-link"
-                        onClick={logout}
+                        onClick={handleLogout}
                         tabIndex={menuOpen ? 0 : -1}
                       >
                         Logout

@@ -151,6 +151,11 @@ export default function JoinForm({
   const resetCaptcha = useCallback(() => {
     setCaptchaToken('');
     setCaptchaResetKey((key) => key + 1);
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.captchaToken;
+      return next;
+    });
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -351,7 +356,7 @@ export default function JoinForm({
             fullWidth
             disabled={isSubmitting || !isFormValid}
           >
-            {isSubmitting ? 'Signing Up...' : 'Sign Up'}
+            {isSubmitting ? 'Joining...' : 'Join Us'}
           </Button>
           <p className="auth-modal__footer-link">
             Already have an account?{' '}
@@ -383,7 +388,7 @@ export default function JoinForm({
             </button>
           </div>
           <Button type="submit" variant="primary" size="md" disabled={isSubmitting || !isFormValid}>
-            {isSubmitting ? 'Signing Up...' : 'Sign Up'}
+            {isSubmitting ? 'Joining...' : 'Join Us'}
           </Button>
         </div>
       )}

@@ -81,6 +81,12 @@ export default function Modal({
 
         {isSplit && (
           <div className="modal__brand-panel">
+            <img
+              src="/images/brand-logo-horizontal.png"
+              alt="Spade Community"
+              className="modal__brand-logo"
+              loading="lazy"
+            />
             <h3>{brandTitle}</h3>
             <p>{brandDescription}</p>
           </div>

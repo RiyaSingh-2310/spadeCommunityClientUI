@@ -166,6 +166,33 @@
   color: var(--color-pink);
 }
 
+.captcha__fallback {
+  margin-top: 6px;
+}
+
+.captcha__retry-btn {
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-teal);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.captcha__retry-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.captcha--modal .captcha__retry-btn {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+
 .captcha--modal .captcha__error {
   color: #ffcdd2;
 }

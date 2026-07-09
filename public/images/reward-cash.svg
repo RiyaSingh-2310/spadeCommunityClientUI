@@ -1,0 +1,9 @@
+<svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="44" rx="8" fill="#FFFFFF"/>
+  <rect x="14" y="11" width="28" height="22" rx="5" fill="#16A34A" fill-opacity="0.12"/>
+  <rect x="18" y="15" width="20" height="14" rx="3" stroke="#16A34A" stroke-width="1.8"/>
+  <circle cx="28" cy="22" r="3.2" stroke="#16A34A" stroke-width="1.8"/>
+  <path d="M24 22H22M34 22H32" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/>
+  <text x="102" y="23" text-anchor="middle" fill="#0F172A" font-size="14" font-family="Arial, Helvetica, sans-serif" font-weight="700">Cash Reward</text>
+  <text x="102" y="33" text-anchor="middle" fill="#6B7280" font-size="9" font-family="Arial, Helvetica, sans-serif" font-weight="600">Direct Cash Payout</text>
+</svg>

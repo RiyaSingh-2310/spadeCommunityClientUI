@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 50" width="120" height="50">
-  <text x="30" y="32" fill="#003087" font-size="24" font-family="Arial" font-weight="bold">P</text>
-  <text x="48" y="32" fill="#009cde" font-size="24" font-family="Arial" font-weight="bold">P</text>
-  <text x="80" y="32" text-anchor="middle" fill="#003087" font-size="14" font-family="Arial" font-weight="bold">PayPal</text>
+<svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M31 11H41.4C46.2 11 48.9 13.6 48.2 18.1C47.4 23.2 43.7 25.7 38.7 25.7H33.8L32.4 33H26.3L31 11Z" fill="#003087"/>
+  <path d="M36.8 14.8H46.6C50.9 14.8 53.3 17 52.7 20.8C52 25.2 48.8 27.4 44.1 27.4H39.4L38.2 33H32.7L36.8 14.8Z" fill="#009CDE"/>
+  <text x="104" y="27" text-anchor="middle" fill="#003087" font-size="16" font-family="Arial, Helvetica, sans-serif" font-weight="700">PayPal</text>
 </svg>

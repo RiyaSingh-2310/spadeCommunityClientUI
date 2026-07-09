@@ -37,11 +37,12 @@ export const steps = [
 ];
 
 export const rewards = [
-  { id: 1, name: 'Flipkart', logo: '/images/reward-flipkart.svg' },
-  { id: 2, name: 'Amazon', logo: '/images/reward-amazon.svg' },
-  { id: 3, name: 'Paytm', logo: '/images/reward-paytm.svg' },
-  { id: 4, name: 'Xoxoday', logo: '/images/reward-xoxoday.svg' },
-  { id: 5, name: 'PayPal', logo: '/images/reward-paypal.svg' },
+  { id: 1, name: 'Amazon', logo: '/images/reward-amazon.svg' },
+  { id: 2, name: 'Flipkart', logo: '/images/reward-flipkart.svg' },
+  { id: 3, name: 'PayPal', logo: '/images/reward-paypal.svg' },
+  { id: 4, name: 'UPI', logo: '/images/upi.png' },
+  { id: 5, name: 'Bank Transfer', logo: '/images/bank-transfer.png' },
+  { id: 6, name: 'Cash Reward', logo: '/images/cash-reward.png' },
 ];
 
 export const features = [

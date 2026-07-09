@@ -1,4 +1,9 @@
-import { Banknote, Gift, Sparkles, Wallet } from 'lucide-react';
+import {
+  Banknote,
+  Gift,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import { rewards } from '../../data/mockData';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import './RewardsSection.css';

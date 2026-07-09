@@ -25,6 +25,7 @@ export async function signup(payload: SignupPayload): Promise<SignupResponse> {
       password: payload.password,
       confirm_password: payload.confirm_password,
     },
+    token: '',
   });
 
   if (response.success === false) {
@@ -57,6 +58,43 @@ export async function verifyAccount({
 
   if (response.success === false) {
     throw new ApiError(response.message || 'Unable to activate your account.', 400);
+  }
+
+  return response;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+  data?: {
+    id: number;
+    name: string;
+    email: string;
+    balance_point: number;
+    questionnaire?: string;
+    questionnaire_url?: string;
+    profile_image?: string | null;
+  };
+}
+
+export async function login(payload: LoginPayload): Promise<LoginResponse> {
+  const response = await apiRequest<LoginResponse>('/api/panelist/login', {
+    method: 'POST',
+    body: {
+      email: payload.email,
+      password: payload.password,
+    },
+    token: '',
+  });
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Login failed. Please try again.', 401);
   }
 
   return response;

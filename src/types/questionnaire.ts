@@ -32,6 +32,7 @@ export interface Questionnaire {
   id: string;
   title: string;
   description: string;
+  language?: string;
   questions: Question[];
   alreadyCompleted?: boolean;
   panelistName?: string;
