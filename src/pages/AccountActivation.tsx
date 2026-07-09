@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { BadgeCheck } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import Button from '../components/ui/Button';
-import SuccessState from '../components/ui/SuccessState';
+import { useLocation, useParams } from 'react-router-dom';
 import { verifyAccount } from '../api/auth';
 import { ApiError } from '../api/ApiError';
-import { useAutoDismiss } from '../hooks/useAutoDismiss';
 import { saveActivationSuccess, wasTokenActivated } from '../utils/activationSession';
-import './Questionnaire.css';
+import './AccountActivation.css';
 
 function useActivationToken() {
   const location = useLocation();
@@ -20,7 +18,6 @@ function useActivationToken() {
 }
 
 export default function AccountActivation() {
-  const navigate = useNavigate();
   const token = useActivationToken();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -61,75 +58,57 @@ export default function AccountActivation() {
     void runActivation();
   }, [runActivation]);
 
-  const handleContinueHome = useCallback(() => {
-    navigate('/');
-  }, [navigate]);
-
-  const { exiting } = useAutoDismiss({
-    active: status === 'success',
-    delayMs: 5000,
-    onDismiss: handleContinueHome,
-  });
-
   if (status === 'loading') {
     return (
-      <div className="activation-page">
-        <div className="activation-page__container">
-          <div className="questionnaire-card questionnaire-card--loading">
-            <h2>Activating your account...</h2>
-            <p>Please wait while we verify your account.</p>
-          </div>
-        </div>
+      <div className="activation-only">
+        <motion.article
+          className="activation-only__card"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <h2>Activating your account...</h2>
+          <p>Please wait while we verify your account.</p>
+        </motion.article>
       </div>
     );
   }
 
   if (status === 'error') {
     return (
-      <div className="activation-page">
-        <div className="activation-page__container">
-          <div className="questionnaire-card questionnaire-card--error">
-            <h2>Account activation failed</h2>
-            <p>{errorMessage || 'This activation link is invalid or expired.'}</p>
-            <div className="questionnaire-card__actions questionnaire-card__actions--center">
-              <Button variant="gradient" onClick={() => void runActivation()}>
-                Retry Activation
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/')}>
-                Return Home
-              </Button>
-            </div>
-          </div>
-        </div>
+      <div className="activation-only">
+        <motion.article
+          className="activation-only__card activation-only__card--error"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
+          <h2>Account activation failed</h2>
+          <p>{errorMessage || 'This activation link is invalid or expired.'}</p>
+        </motion.article>
       </div>
     );
   }
 
   return (
-    <div className="activation-page">
-      <div className="activation-page__container">
-        <div className={`questionnaire-card questionnaire-card--complete questionnaire-card--premium${exiting ? ' questionnaire-card--exiting' : ''}`}>
-          <SuccessState
-            variant="premium"
-            icon={BadgeCheck}
-            iconVariant="violet"
-            eyebrow="Activation Complete"
-            title="Account Activated Successfully"
-            body="Your account has been verified. You may now proceed with your questionnaire invitation from your email."
-            badges={[
-              { label: 'Email Verified', success: true },
-              { label: 'Account Active', success: true },
-            ]}
-            actions={
-              <Button variant="gradient" onClick={handleContinueHome}>
-                Continue to Home
-              </Button>
-            }
-            autoHint="Continuing automatically…"
-            exiting={exiting}
-          />
+    <div className="activation-only">
+      <motion.article
+        className="activation-only__card"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+      >
+        <div className="activation-only__icon" aria-hidden="true">
+          <BadgeCheck size={24} />
         </div>
-      </div>
+        <p className="activation-only__eyebrow">Activation Complete</p>
+        <h1>Account Activated Successfully</h1>
+        <p>
+          Your account has been verified successfully.
+          <br />
+          You may now proceed to your questionnaire invitation from your email.
+        </p>
+      </motion.article>
     </div>
   );
 }

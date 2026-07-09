@@ -1,7 +1,7 @@
 .panelist-dashboard,
 .panelist-settings {
-  padding-top: clamp(120px, 16vw, 160px);
-  padding-bottom: clamp(56px, 8vw, 88px);
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .panelist-dashboard__hero,
@@ -679,7 +679,7 @@
 @media (max-width: 640px) {
   .panelist-dashboard,
   .panelist-settings {
-    padding-top: 110px;
+    padding-top: 0;
   }
 
   .panelist-dashboard__table th,

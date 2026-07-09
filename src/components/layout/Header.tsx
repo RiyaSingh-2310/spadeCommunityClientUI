@@ -9,7 +9,7 @@ import './Header.css';
 const publicLinks = [
   { label: 'Home', path: '/' },
   { label: 'Privacy Policy', path: '/privacy-policy' },
-  { label: 'About Us', path: '/about' },
+  { label: 'About', path: '/about' },
   { label: 'FAQ', path: '/faq' },
   { label: 'Contact', path: '/contact' },
 ];

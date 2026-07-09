@@ -200,10 +200,6 @@
   display: none;
 }
 
-.site-header__profile-trigger:not(:has(.site-header__profile-avatar)):not(:has(.site-header__profile-initials)) .site-header__profile-fallback-icon {
-  display: block;
-}
-
 .site-header__profile-trigger:hover,
 .site-header__profile-trigger--open {
   color: var(--color-secondary);

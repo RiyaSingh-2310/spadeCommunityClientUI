@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { motion } from 'framer-motion';
 import AnimatedPoints from './AnimatedPoints';
 
 interface DashboardStatCardProps {
@@ -19,7 +20,13 @@ export default function DashboardStatCard({
   accent = 'violet',
 }: DashboardStatCardProps) {
   return (
-    <article className={`panelist-stat-card panelist-stat-card--${accent}`}>
+    <motion.article
+      className={`panelist-stat-card panelist-stat-card--${accent}`}
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      whileHover={{ y: -3 }}
+    >
       <div className="panelist-stat-card__icon">{icon}</div>
       <p className="panelist-stat-card__label">{label}</p>
       {loading ? (
@@ -27,6 +34,6 @@ export default function DashboardStatCard({
       ) : (
         <AnimatedPoints value={value} suffix={suffix} className="panelist-stat-card__value" />
       )}
-    </article>
+    </motion.article>
   );
 }
