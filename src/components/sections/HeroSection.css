@@ -284,6 +284,33 @@
   max-width: 18ch;
 }
 
+.hero-v2__inner--single {
+  grid-template-columns: minmax(0, 1fr) !important;
+  justify-items: center;
+}
+
+.hero-v2__inner--single .hero-v2__copy--member {
+  width: min(960px, 100%);
+  text-align: center;
+}
+
+.hero-v2__inner--single .hero-v2__lead {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 68ch;
+}
+
+.hero-v2__inner--single .hero-v2__list {
+  max-width: 660px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.hero-v2__inner--single .hero-v2__trust {
+  justify-content: center;
+}
+
 .hero-v2__panel--member {
   max-width: 480px;
   justify-self: end;

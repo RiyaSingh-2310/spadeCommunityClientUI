@@ -52,6 +52,7 @@ export default function HeroSection() {
   const showJoinForm = onboarding.phase === 'none';
   const isMember = onboarding.phase === 'member';
   const listItems = isMember ? memberHighlights : highlights;
+  const showRightCard = !isMember;
 
   return (
     <section className={`hero-v2${isMember ? ' hero-v2--member' : ''}`}>
@@ -63,7 +64,7 @@ export default function HeroSection() {
         <span className="hero-v2__grid" />
       </div>
 
-      <div className={`hero-v2__inner container-wide${isMember ? ' hero-v2__inner--member' : ''}`}>
+      <div className={`hero-v2__inner container-wide${isMember ? ' hero-v2__inner--member hero-v2__inner--single' : ''}`}>
         <div ref={leftRef} className={`hero-v2__copy ${leftClass}${isMember ? ' hero-v2__copy--member' : ''}`}>
           <div className="hero-v2__badge">
             <Sparkles size={14} />
@@ -124,31 +125,33 @@ export default function HeroSection() {
           </div> */}
         </div>
 
-        <div
-          ref={rightRef}
-          className={`hero-v2__panel reveal-opacity${rightVisible ? ' reveal--visible' : ''}${isMember ? ' hero-v2__panel--member' : ''}`}
-        >
-          <div className="hero-v2__panel-glow" aria-hidden="true" />
-          <div className={`hero-v2__panel-card${isMember ? ' hero-v2__panel-card--member' : ''}`}>
-            {showJoinForm ? (
-              <>
-                <div className="hero-v2__panel-header">
-                  <div>
-                    <p className="hero-v2__panel-eyebrow">Start in minutes</p>
-                    <h2 className="hero-v2__panel-title">Join Our Survey</h2>
+        {showRightCard ? (
+          <div
+            ref={rightRef}
+            className={`hero-v2__panel reveal-opacity${rightVisible ? ' reveal--visible' : ''}`}
+          >
+            <div className="hero-v2__panel-glow" aria-hidden="true" />
+            <div className="hero-v2__panel-card">
+              {showJoinForm ? (
+                <>
+                  <div className="hero-v2__panel-header">
+                    <div>
+                      <p className="hero-v2__panel-eyebrow">Start in minutes</p>
+                      <h2 className="hero-v2__panel-title">Join Our Survey</h2>
+                    </div>
+                    <span className="hero-v2__panel-badge">+$2 Bonus</span>
                   </div>
-                  <span className="hero-v2__panel-badge">+$2 Bonus</span>
-                </div>
-                <JoinForm
-                  captchaActive={captchaReady}
-                  onSignupSuccess={() => setOnboardingRefresh((v) => v + 1)}
-                />
-              </>
-            ) : (
-              <HeroStateCard phase={onboarding.phase} email={onboarding.email} />
-            )}
+                  <JoinForm
+                    captchaActive={captchaReady}
+                    onSignupSuccess={() => setOnboardingRefresh((v) => v + 1)}
+                  />
+                </>
+              ) : (
+                <HeroStateCard phase={onboarding.phase} email={onboarding.email} />
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );

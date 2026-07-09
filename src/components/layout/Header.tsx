@@ -9,7 +9,7 @@ import './Header.css';
 const publicLinks = [
   { label: 'Home', path: '/' },
   { label: 'Privacy Policy', path: '/privacy-policy' },
-  { label: 'About', path: '/about' },
+  { label: 'About Us', path: '/about' },
   { label: 'FAQ', path: '/faq' },
   { label: 'Contact', path: '/contact' },
 ];
@@ -76,7 +76,12 @@ export default function Header() {
   };
 
   const routeLinks = isAuthenticated
-    ? [{ label: 'Dashboard', path: '/dashboard' }, ...publicLinks]
+    ? [
+        { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Home', path: '/home' },
+        { label: 'Redeem Rewards', path: '/redeem-rewards' },
+        { label: 'Redeem History', path: '/redeem-history' },
+      ]
     : publicLinks;
 
   const initials = (user?.name || 'P')

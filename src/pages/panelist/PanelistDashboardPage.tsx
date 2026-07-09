@@ -127,7 +127,7 @@ export default function PanelistDashboardPage() {
                 {stats.availableBalance.toLocaleString()} pts
               </strong>
             </div>
-            <Link to="/redeem" className="panelist-profile-card__edit">
+            <Link to="/redeem-rewards" className="panelist-profile-card__edit">
               Redeem Rewards
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
@@ -228,7 +228,7 @@ export default function PanelistDashboardPage() {
                 <strong className="panelist-profile-card__status">{user?.status || 'Active'}</strong>
               </li>
             </ul>
-            <Link to="/profile" className="panelist-profile-card__edit">
+            <Link to="/settings" className="panelist-profile-card__edit">
               Edit Profile
               <ArrowRight size={16} aria-hidden="true" />
             </Link>

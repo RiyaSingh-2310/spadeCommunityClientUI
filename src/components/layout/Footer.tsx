@@ -7,7 +7,16 @@ import {
   contactInfo,
 } from '../../data/mockData';
 import { useAuthModal } from '../../context/AuthModalContext';
+import { usePanelistAuth } from '../../context/PanelistAuthContext';
 import './Footer.css';
+
+const authenticatedQuickLinks = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Home', path: '/home' },
+  { label: 'Redeem Rewards', path: '/redeem-rewards' },
+  { label: 'Redeem History', path: '/redeem-history' },
+  { label: 'Settings', path: '/settings' },
+];
 
 function SocialIcon({ icon }: { icon: string }) {
   switch (icon) {
@@ -43,6 +52,8 @@ function SocialIcon({ icon }: { icon: string }) {
 export default function Footer() {
   const year = new Date().getFullYear();
   const { openLogin, openSignup } = useAuthModal();
+  const { isAuthenticated } = usePanelistAuth();
+  const quickLinks = isAuthenticated ? authenticatedQuickLinks : footerQuickLinks;
 
   return (
     <footer className="footer">
@@ -62,7 +73,7 @@ export default function Footer() {
         <div className="footer__column">
           <h4 className="footer__heading">Quick Links</h4>
           <ul>
-            {footerQuickLinks.map((link) => (
+            {quickLinks.map((link) => (
               <li key={link.path}>
                 <Link to={link.path}>{link.label}</Link>
               </li>
