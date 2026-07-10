@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { Banknote, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Banknote, Info, Loader2, Wallet } from 'lucide-react';
 import { ApiError } from '../../api/ApiError';
-import Button from '../../components/ui/Button';
 import { usePanelistDashboard } from '../../hooks/usePanelistDashboard';
-import './PanelistExperience.css';
+import './PanelistPortal.css';
 
 export default function PanelistRedeemPage() {
   const { stats, rewardSettings, redemptionMethods, submitRedemption } = usePanelistDashboard();
@@ -53,22 +53,52 @@ export default function PanelistRedeemPage() {
     }
   };
 
-  return (
-    <section className="panelist-settings container-wide">
-      <div className="panelist-settings__hero">
-        <p className="panelist-dashboard__eyebrow">
-          <Banknote size={14} aria-hidden="true" />
-          Redeem Rewards
-        </p>
-        <h1>Submit Redemption Request</h1>
-        <p>Use your available balance to request a payout.</p>
-      </div>
+  const minimumPayout = Number(rewardSettings?.minimum_payout ?? 0);
 
-      <article className="panelist-settings__card">
-        <p className="panelist-redeem__hint">
-          Available Balance: <strong>{stats.availableBalance.toLocaleString()} pts</strong>
-        </p>
-        <form className="panelist-redeem__form" onSubmit={(event) => void handleSubmit(event)}>
+  return (
+    <section className="pdash container-wide pdash-fade-in">
+      <motion.header
+        className="pdash-hero"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="pdash-hero__inner">
+          <div className="pdash-hero__copy">
+            <p className="pdash-hero__eyebrow">
+              <Banknote size={13} aria-hidden="true" />
+              Redeem Rewards
+            </p>
+            <h1 className="pdash-hero__title">Submit Redemption Request</h1>
+            <p className="pdash-hero__subtitle">
+              Convert your earned points into rewards through your preferred payout method.
+            </p>
+          </div>
+          <div className="pdash-hero__avatar" aria-hidden="true">
+            <Wallet size={22} />
+          </div>
+        </div>
+      </motion.header>
+
+      <motion.article
+        className="pdash-panel"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.06 }}
+      >
+        <div className="pdash-balance">
+          <span>Available Balance</span>
+          <strong>{stats.availableBalance.toLocaleString()} pts</strong>
+        </div>
+
+        {minimumPayout > 0 ? (
+          <p className="pdash-hint" style={{ marginBottom: 20 }}>
+            <Info size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+            Minimum redemption: {minimumPayout.toLocaleString()} points
+          </p>
+        ) : null}
+
+        <form className="pdash-form" onSubmit={(event) => void handleSubmit(event)}>
           <label>
             Redemption Amount
             <input
@@ -108,27 +138,21 @@ export default function PanelistRedeemPage() {
             />
           </label>
 
-          {rewardSettings?.minimum_payout ? (
-            <p className="panelist-redeem__hint">
-              Minimum redemption: {Number(rewardSettings.minimum_payout).toLocaleString()} points
-            </p>
-          ) : null}
+          {error ? <p className="pdash-message pdash-message--error" role="alert">{error}</p> : null}
+          {message ? <p className="pdash-message pdash-message--success" role="status">{message}</p> : null}
 
-          {error ? <p className="panelist-settings__message panelist-settings__message--error">{error}</p> : null}
-          {message ? <p className="panelist-settings__message panelist-settings__message--success">{message}</p> : null}
-
-          <Button type="submit" variant="gradient" size="md" disabled={isSubmitting}>
+          <button type="submit" className="pdash-btn pdash-btn--block" disabled={isSubmitting}>
             {isSubmitting ? (
               <>
-                <Loader2 size={16} className="panelist-dashboard__spin" />
+                <Loader2 size={16} className="pdash-spin" />
                 Submitting...
               </>
             ) : (
               'Submit Redeem Request'
             )}
-          </Button>
+          </button>
         </form>
-      </article>
+      </motion.article>
     </section>
   );
 }

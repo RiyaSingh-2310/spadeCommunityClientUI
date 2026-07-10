@@ -81,26 +81,28 @@ export default function Footer() {
           </ul>
         </div>
 
-        <div className="footer__column">
-          <h4 className="footer__heading">Community</h4>
-          <ul>
-            {footerCommunityLinks.map((link) => (
-              <li key={link.label}>
-                {'action' in link ? (
-                  <button
-                    type="button"
-                    className="footer__auth-link"
-                    onClick={() => (link.action === 'login' ? openLogin() : openSignup())}
-                  >
-                    {link.label}
-                  </button>
-                ) : (
-                  <Link to={link.path}>{link.label}</Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {!isAuthenticated ? (
+          <div className="footer__column">
+            <h4 className="footer__heading">Community</h4>
+            <ul>
+              {footerCommunityLinks.map((link) => (
+                <li key={link.label}>
+                  {'action' in link ? (
+                    <button
+                      type="button"
+                      className="footer__auth-link"
+                      onClick={() => (link.action === 'login' ? openLogin() : openSignup())}
+                    >
+                      {link.label}
+                    </button>
+                  ) : (
+                    <Link to={link.path}>{link.label}</Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="footer__column">
           <h4 className="footer__heading">Contact Us</h4>

@@ -124,7 +124,7 @@ export default function Header() {
                       className={({ isActive }) =>
                         `site-header__link${isActive ? ' site-header__link--active' : ''}`
                       }
-                      end={link.path === '/'}
+                      end={link.path === '/' || link.path === '/home'}
                     >
                       {link.label}
                     </NavLink>
@@ -199,7 +199,7 @@ export default function Header() {
                       `site-header__dropdown-link${isActive ? ' site-header__dropdown-link--active' : ''}`
                     }
                     onClick={closeMenu}
-                    end={link.path === '/'}
+                    end={link.path === '/' || link.path === '/home'}
                     tabIndex={menuOpen ? 0 : -1}
                   >
                     {link.label}

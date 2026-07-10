@@ -178,10 +178,10 @@ export const contactInfo = {
 
 export const footerQuickLinks = [
   { label: 'Home', path: '/' },
-  { label: 'About', path: '/about' },
+  { label: 'About Us', path: '/about' },
+  { label: 'Privacy Policy', path: '/privacy-policy' },
   { label: 'FAQ', path: '/faq' },
   { label: 'Contact', path: '/contact' },
-  { label: 'Privacy Policy', path: '/privacy-policy' },
 ];
 
 export const footerCommunityLinks: Array<

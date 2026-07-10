@@ -1,10 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Eye, EyeOff, Loader2, LogOut, Save, Settings, ShieldCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Loader2, LogOut, Save, Settings, ShieldCheck, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../../api/ApiError';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '../../api/panelist';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
-import './PanelistExperience.css';
+import './PanelistPortal.css';
 
 export default function PanelistSettingsPage() {
   const navigate = useNavigate();
@@ -94,22 +95,41 @@ export default function PanelistSettingsPage() {
   };
 
   return (
-    <section className="panelist-settings container-wide">
-      <div className="panelist-settings__hero">
-        <p className="panelist-dashboard__eyebrow">
-          <Settings size={14} aria-hidden="true" />
-          Account
-        </p>
-        <h1>Settings</h1>
-        <p>Update your personal information and manage account security.</p>
-      </div>
+    <section className="pdash container-wide pdash-fade-in">
+      <motion.header
+        className="pdash-hero"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div className="pdash-hero__inner">
+          <div className="pdash-hero__copy">
+            <p className="pdash-hero__eyebrow">
+              <Settings size={13} aria-hidden="true" />
+              Account Settings
+            </p>
+            <h1 className="pdash-hero__title">Settings</h1>
+            <p className="pdash-hero__subtitle">
+              Update your personal information and manage account security.
+            </p>
+          </div>
+          <div className="pdash-hero__avatar" aria-hidden="true">
+            <UserRound size={22} />
+          </div>
+        </div>
+      </motion.header>
 
-      {error ? <div className="panelist-settings__message panelist-settings__message--error">{error}</div> : null}
+      {error ? <div className="pdash-error" role="alert">{error}</div> : null}
 
-      <div className="panelist-settings__grid">
-        <article className="panelist-settings__card">
+      <div className="pdash-settings-grid">
+        <motion.article
+          className="pdash-panel"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.06 }}
+        >
           <h2>Personal Information</h2>
-          <form className="panelist-settings__form" onSubmit={(event) => void handleSavePersonalInfo(event)}>
+          <form className="pdash-form" onSubmit={(event) => void handleSavePersonalInfo(event)}>
             <label>
               Full Name
               <input value={fullName} onChange={(event) => setFullName(event.target.value)} required />
@@ -128,21 +148,26 @@ export default function PanelistSettingsPage() {
               />
             </label>
             {profileMessage ? (
-              <p className="panelist-settings__message panelist-settings__message--success">{profileMessage}</p>
+              <p className="pdash-message pdash-message--success">{profileMessage}</p>
             ) : null}
-            <button type="submit" className="panelist-settings__button" disabled={isSavingProfile}>
-              {isSavingProfile ? <Loader2 size={16} className="panelist-dashboard__spin" /> : <Save size={16} />}
+            <button type="submit" className="pdash-btn pdash-btn--block" disabled={isSavingProfile}>
+              {isSavingProfile ? <Loader2 size={16} className="pdash-spin" /> : <Save size={16} />}
               {isSavingProfile ? 'Updating...' : 'Update Profile'}
             </button>
           </form>
-        </article>
+        </motion.article>
 
-        <article className="panelist-settings__card">
+        <motion.article
+          className="pdash-panel"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
           <h2>Change Password</h2>
-          <form className="panelist-settings__form" onSubmit={(event) => void handleChangePassword(event)}>
+          <form className="pdash-form" onSubmit={(event) => void handleChangePassword(event)}>
             <label>
               Current Password
-              <span className="panelist-settings__password-wrap">
+              <span className="pdash-password-wrap">
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   value={currentPassword}
@@ -160,7 +185,7 @@ export default function PanelistSettingsPage() {
             </label>
             <label>
               New Password
-              <span className="panelist-settings__password-wrap">
+              <span className="pdash-password-wrap">
                 <input
                   type={showNew ? 'text' : 'password'}
                   value={newPassword}
@@ -178,7 +203,7 @@ export default function PanelistSettingsPage() {
             </label>
             <label>
               Confirm Password
-              <span className="panelist-settings__password-wrap">
+              <span className="pdash-password-wrap">
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
@@ -195,32 +220,35 @@ export default function PanelistSettingsPage() {
               </span>
             </label>
             {passwordMessage ? (
-              <p className="panelist-settings__message panelist-settings__message--success">{passwordMessage}</p>
+              <p className="pdash-message pdash-message--success">{passwordMessage}</p>
             ) : null}
             <button
               type="submit"
-              className="panelist-settings__button panelist-settings__button--secondary"
+              className="pdash-btn pdash-btn--secondary pdash-btn--block"
               disabled={isSavingPassword}
             >
-              {isSavingPassword ? <Loader2 size={16} className="panelist-dashboard__spin" /> : <ShieldCheck size={16} />}
+              {isSavingPassword ? <Loader2 size={16} className="pdash-spin" /> : <ShieldCheck size={16} />}
               {isSavingPassword ? 'Updating...' : 'Change Password'}
             </button>
           </form>
-        </article>
+        </motion.article>
       </div>
 
-      <div className="panelist-settings__logout-card">
-        <h2>Logout</h2>
-        <p>Sign out of your account and return to the public website.</p>
-        <button
-          type="button"
-          className="panelist-settings__button panelist-settings__button--danger"
-          onClick={handleLogout}
-        >
+      <motion.article
+        className="pdash-panel pdash-logout"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.14 }}
+      >
+        <div>
+          <h2>Logout</h2>
+          <p>Sign out of your account and return to the public website.</p>
+        </div>
+        <button type="button" className="pdash-btn pdash-btn--danger" onClick={handleLogout}>
           <LogOut size={16} />
           Logout
         </button>
-      </div>
+      </motion.article>
     </section>
   );
 }
