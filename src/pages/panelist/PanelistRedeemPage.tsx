@@ -57,102 +57,94 @@ export default function PanelistRedeemPage() {
 
   return (
     <section className="pdash container-wide pdash-fade-in">
-      <motion.header
-        className="pdash-hero"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="pdash-hero__inner">
-          <div className="pdash-hero__copy">
-            <p className="pdash-hero__eyebrow">
-              <Banknote size={13} aria-hidden="true" />
-              Redeem Rewards
-            </p>
-            <h1 className="pdash-hero__title">Submit Redemption Request</h1>
-            <p className="pdash-hero__subtitle">
-              Convert your earned points into rewards through your preferred payout method.
-            </p>
-          </div>
-          <div className="pdash-hero__avatar" aria-hidden="true">
-            <Wallet size={22} />
-          </div>
-        </div>
-      </motion.header>
+      <header className="pdash-page-head">
+        <p className="pdash-page-head__eyebrow">
+          <Banknote size={13} aria-hidden="true" />
+          Redeem Rewards
+        </p>
+        <h1>Submit redemption request</h1>
+        <p>Convert your earned points into rewards through your preferred payout method.</p>
+      </header>
 
-      <motion.article
-        className="pdash-panel"
-        initial={{ opacity: 0, y: 10 }}
+      <motion.div
+        className="pdash-wallet"
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.06 }}
+        transition={{ duration: 0.35 }}
       >
-        <div className="pdash-balance">
-          <span>Available Balance</span>
+        <aside className="pdash-wallet__balance">
+          <span>Available balance</span>
           <strong>{stats.availableBalance.toLocaleString()} pts</strong>
-        </div>
+          <p>Points ready to redeem from your research participation.</p>
+          {minimumPayout > 0 ? (
+            <p>
+              <Info size={13} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+              Minimum: {minimumPayout.toLocaleString()} pts
+            </p>
+          ) : null}
+        </aside>
 
-        {minimumPayout > 0 ? (
-          <p className="pdash-hint" style={{ marginBottom: 20 }}>
-            <Info size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-            Minimum redemption: {minimumPayout.toLocaleString()} points
-          </p>
-        ) : null}
+        <article className="pdash-panel pdash-wallet__form">
+          <h2>Redemption details</h2>
+          <form className="pdash-form" onSubmit={(event) => void handleSubmit(event)}>
+            <label>
+              Redemption Amount
+              <input
+                type="number"
+                min="1"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                required
+                disabled={isSubmitting}
+                placeholder="Enter points to redeem"
+              />
+            </label>
 
-        <form className="pdash-form" onSubmit={(event) => void handleSubmit(event)}>
-          <label>
-            Redemption Amount
-            <input
-              type="number"
-              min="1"
-              value={amount}
-              onChange={(event) => setAmount(event.target.value)}
-              required
-              disabled={isSubmitting}
-              placeholder="Enter points to redeem"
-            />
-          </label>
+            <label>
+              Redemption Method
+              <select
+                value={method}
+                onChange={(event) => setMethod(event.target.value)}
+                disabled={isSubmitting}
+              >
+                {redemptionMethods.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label>
-            Redemption Method
-            <select
-              value={method}
-              onChange={(event) => setMethod(event.target.value)}
-              disabled={isSubmitting}
-            >
-              {redemptionMethods.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label>
+              Note (optional)
+              <input
+                type="text"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                disabled={isSubmitting}
+                placeholder="Any additional details"
+              />
+            </label>
 
-          <label>
-            Note (optional)
-            <input
-              type="text"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              disabled={isSubmitting}
-              placeholder="Any additional details"
-            />
-          </label>
+            {error ? <p className="pdash-message pdash-message--error" role="alert">{error}</p> : null}
+            {message ? <p className="pdash-message pdash-message--success" role="status">{message}</p> : null}
 
-          {error ? <p className="pdash-message pdash-message--error" role="alert">{error}</p> : null}
-          {message ? <p className="pdash-message pdash-message--success" role="status">{message}</p> : null}
-
-          <button type="submit" className="pdash-btn pdash-btn--block" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 size={16} className="pdash-spin" />
-                Submitting...
-              </>
-            ) : (
-              'Submit Redeem Request'
-            )}
-          </button>
-        </form>
-      </motion.article>
+            <button type="submit" className="pdash-btn pdash-btn--block" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 size={16} className="pdash-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Wallet size={16} />
+                  Submit Redeem Request
+                </>
+              )}
+            </button>
+          </form>
+        </article>
+      </motion.div>
     </section>
   );
 }

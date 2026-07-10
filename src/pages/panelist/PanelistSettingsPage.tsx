@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Loader2, LogOut, Save, Settings, ShieldCheck, UserRound } from 'lucide-react';
+import { Eye, EyeOff, Loader2, LogOut, Save, Settings, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../../api/ApiError';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '../../api/panelist';
@@ -96,39 +96,28 @@ export default function PanelistSettingsPage() {
 
   return (
     <section className="pdash container-wide pdash-fade-in">
-      <motion.header
-        className="pdash-hero"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="pdash-hero__inner">
-          <div className="pdash-hero__copy">
-            <p className="pdash-hero__eyebrow">
-              <Settings size={13} aria-hidden="true" />
-              Account Settings
-            </p>
-            <h1 className="pdash-hero__title">Settings</h1>
-            <p className="pdash-hero__subtitle">
-              Update your personal information and manage account security.
-            </p>
-          </div>
-          <div className="pdash-hero__avatar" aria-hidden="true">
-            <UserRound size={22} />
-          </div>
-        </div>
-      </motion.header>
+      <header className="pdash-page-head">
+        <p className="pdash-page-head__eyebrow">
+          <Settings size={13} aria-hidden="true" />
+          Account Settings
+        </p>
+        <h1>Settings</h1>
+        <p>Update your personal information and manage account security.</p>
+      </header>
 
       {error ? <div className="pdash-error" role="alert">{error}</div> : null}
 
       <div className="pdash-settings-grid">
         <motion.article
           className="pdash-panel"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.06 }}
+          transition={{ duration: 0.35 }}
         >
-          <h2>Personal Information</h2>
+          <div className="pdash-panel__head">
+            <h2>Personal Information</h2>
+            <p>Keep your profile up to date for better survey matching.</p>
+          </div>
           <form className="pdash-form" onSubmit={(event) => void handleSavePersonalInfo(event)}>
             <label>
               Full Name
@@ -159,11 +148,14 @@ export default function PanelistSettingsPage() {
 
         <motion.article
           className="pdash-panel"
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
+          transition={{ duration: 0.35, delay: 0.04 }}
         >
-          <h2>Change Password</h2>
+          <div className="pdash-panel__head">
+            <h2>Change Password</h2>
+            <p>Update your password to keep your account secure.</p>
+          </div>
           <form className="pdash-form" onSubmit={(event) => void handleChangePassword(event)}>
             <label>
               Current Password
@@ -236,9 +228,9 @@ export default function PanelistSettingsPage() {
 
       <motion.article
         className="pdash-panel pdash-logout"
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.14 }}
+        transition={{ duration: 0.35, delay: 0.08 }}
       >
         <div>
           <h2>Logout</h2>

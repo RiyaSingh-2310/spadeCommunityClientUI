@@ -15,35 +15,26 @@ export default function PanelistRedeemHistoryPage() {
 
   return (
     <section className="pdash container-wide pdash-fade-in">
-      <motion.header
-        className="pdash-hero"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className="pdash-hero__inner">
-          <div className="pdash-hero__copy">
-            <p className="pdash-hero__eyebrow">
-              <History size={13} aria-hidden="true" />
-              Redemption History
-            </p>
-            <h1 className="pdash-hero__title">Track Your Redemption Requests</h1>
-            <p className="pdash-hero__subtitle">
-              View request date, amount, method, and approval status for every payout.
-            </p>
-          </div>
-          <div className="pdash-hero__avatar" aria-hidden="true">
-            <Coins size={22} />
-          </div>
-        </div>
-      </motion.header>
+      <header className="pdash-page-head">
+        <p className="pdash-page-head__eyebrow">
+          <History size={13} aria-hidden="true" />
+          Redemption History
+        </p>
+        <h1>Track your redemption requests</h1>
+        <p>View request date, amount, method, and approval status for every payout.</p>
+      </header>
 
       <motion.article
         className="pdash-panel"
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.06 }}
+        transition={{ duration: 0.35 }}
       >
+        <div className="pdash-panel__head">
+          <h2>All requests</h2>
+          <p>{redemptionHistory.length > 0 ? `${redemptionHistory.length} request(s) on this page` : 'Your payout history'}</p>
+        </div>
+
         {isLoading ? (
           <div className="pdash-skeleton pdash-skeleton--table" aria-hidden="true" />
         ) : redemptionHistory.length === 0 ? (
