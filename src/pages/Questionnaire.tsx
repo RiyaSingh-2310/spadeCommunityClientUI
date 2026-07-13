@@ -156,7 +156,7 @@ export default function Questionnaire() {
                 </>
               }
               actions={
-                <Button variant="gradient" onClick={handleReturnHome}>
+                <Button variant="primary" onClick={handleReturnHome}>
                   Return Home
                 </Button>
               }

@@ -218,7 +218,7 @@ export default function About() {
               Join thousands of panelists earning rewards while shaping the products and services of
               tomorrow.
             </p>
-            <Button variant="gradient" size="lg" onClick={openSignup}>
+            <Button variant="primary" size="lg" onClick={openSignup}>
               Join Our Community
             </Button>
           </div>

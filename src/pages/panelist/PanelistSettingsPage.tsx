@@ -216,7 +216,7 @@ export default function PanelistSettingsPage() {
             ) : null}
             <button
               type="submit"
-              className="pdash-btn pdash-btn--secondary pdash-btn--block"
+              className="pdash-btn pdash-btn--block"
               disabled={isSavingPassword}
             >
               {isSavingPassword ? <Loader2 size={16} className="pdash-spin" /> : <ShieldCheck size={16} />}

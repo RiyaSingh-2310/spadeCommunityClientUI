@@ -91,14 +91,16 @@
   background: rgba(79, 70, 229, 0.06);
 }
 
+/* Legacy alias — primary CTAs use solid dark style, not gradients */
 .btn--gradient {
   color: white;
-  background: var(--gradient-brand);
-  box-shadow: var(--shadow-violet-glow);
+  background: var(--color-primary);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
 }
 
 .btn--gradient:hover:not(:disabled) {
   transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.24);
 }
 
 /* Inputs */

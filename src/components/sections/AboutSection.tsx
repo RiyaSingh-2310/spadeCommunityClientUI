@@ -28,7 +28,7 @@ export default function AboutSection() {
               shapes the future of consumer research.
             </p>
             <Link to="/about">
-              <Button variant="gradient" size="lg">
+              <Button variant="primary" size="lg">
                 Learn More
               </Button>
             </Link>

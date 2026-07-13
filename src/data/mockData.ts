@@ -40,7 +40,7 @@ export const rewards = [
   { id: 1, name: 'Amazon', logo: '/images/reward-amazon.svg' },
   { id: 2, name: 'Flipkart', logo: '/images/reward-flipkart.svg' },
   { id: 3, name: 'PayPal', logo: '/images/reward-paypal.svg' },
-  { id: 4, name: 'UPI', logo: '/images/upi.png' },
+  { id: 4, name: 'UPI', logo: '/images/reward-upi.svg' },
   { id: 5, name: 'Bank Transfer', logo: '/images/bank-transfer.png' },
   { id: 6, name: 'Cash Reward', logo: '/images/cash-reward.png' },
 ];
@@ -181,6 +181,15 @@ export const footerQuickLinks = [
   { label: 'About Us', path: '/about' },
   { label: 'Privacy Policy', path: '/privacy-policy' },
   { label: 'FAQ', path: '/faq' },
+  { label: 'Contact', path: '/contact' },
+];
+
+export const footerQuickLinksAuthenticated = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Home', path: '/home' },
+  { label: 'About Us', path: '/about' },
+  { label: 'Redeem Rewards', path: '/redeem-rewards' },
+  { label: 'Redeem History', path: '/redeem-history' },
   { label: 'Contact', path: '/contact' },
 ];
 

@@ -1,5 +1,7 @@
-<svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="20" y="10" width="24" height="24" rx="6" fill="#2874F0"/>
-  <path d="M32 16H26.5L25.5 20H29.5V23H26L25 27H29V29H31.8V27H35.3V23H32V20H35.8V16H32Z" fill="#FFD300"/>
-  <text x="95" y="27" text-anchor="middle" fill="#2874F0" font-size="16" font-family="Arial, Helvetica, sans-serif" font-weight="700">Flipkart</text>
+<svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flipkart">
+  <path d="M12 15C12 12.7909 13.7909 11 16 11H25.2C27.4091 11 29.2 12.7909 29.2 15V16H32C33.1046 16 34 16.8954 34 18V33C34 35.2091 32.2091 37 30 37H14C11.7909 37 10 35.2091 10 33V18C10 16.8954 10.8954 16 12 16V15Z" fill="#FFE500"/>
+  <path d="M16.4 8.4C16.4 6.8536 17.6536 5.6 19.2 5.6H22C23.5464 5.6 24.8 6.8536 24.8 8.4V11H16.4V8.4Z" fill="#FFE500"/>
+  <path d="M15.4 19.2H23.4V22H18.6V25.2H22.6V28H18.6V32H15.4V19.2Z" fill="#2874F0"/>
+  <text x="44" y="28.5" fill="#2874F0" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">Flipkart</text>
+  <path d="M44 31.8H96.5C98.433 31.8 100 33.367 100 35.3C100 36.017 99.717 36.7 99.2 37.2C97.5 38.7 94.8 38.2 93.7 36.2L91.5 32.5C90.4 30.5 87.7 30 86 31.5C85.483 32 85.2 32.683 85.2 33.4C85.2 35.333 86.767 36.9 88.7 36.9H44V31.8Z" fill="#FFE500"/>
 </svg>

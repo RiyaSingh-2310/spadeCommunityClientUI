@@ -1,18 +1,14 @@
-import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
   Calendar,
-  CheckCircle2,
   ClipboardList,
   Clock,
   Gift,
   History,
-  Lightbulb,
   Settings,
   Sparkles,
-  TrendingUp,
   UserRound,
   Wallet,
 } from 'lucide-react';
@@ -47,28 +43,6 @@ function getLastActivityLabel(surveyDates: string[], redemptionDates: string[]) 
   return formatDate(new Date(Math.max(...timestamps)).toISOString());
 }
 
-function redemptionActivityTitle(status: string) {
-  const lower = status.toLowerCase();
-  if (lower.includes('approv') || lower.includes('complete')) return 'Reward approved';
-  if (lower.includes('reject')) return 'Reward rejected';
-  if (lower.includes('pending')) return 'Reward requested';
-  return 'Redemption request submitted';
-}
-
-type ActivityItem = {
-  id: string;
-  kind: 'survey' | 'redeem' | 'approved';
-  title: string;
-  meta: string;
-  sortKey: number;
-};
-
-const tips = [
-  'Complete your profile to unlock more survey opportunities.',
-  'Redeem points once you reach the minimum payout threshold.',
-  'Check redemption history to track approval status.',
-];
-
 const fadeUp = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
@@ -84,10 +58,7 @@ export default function PanelistDashboardPage() {
     redemptionHistory,
     historyPage,
     historyTotalPages,
-    redeemPage,
-    redeemTotalPages,
     setHistoryPage,
-    setRedeemPage,
   } = usePanelistDashboard();
 
   const profileCompletion = getProfileCompletion(user);
@@ -95,30 +66,6 @@ export default function PanelistDashboardPage() {
     stats.totalEarned > 0 ? Math.round((stats.availableBalance / stats.totalEarned) * 100) : 0;
   const redeemProgress =
     stats.totalEarned > 0 ? Math.round((stats.totalRedeemed / stats.totalEarned) * 100) : 0;
-
-  const recentActivity = useMemo<ActivityItem[]>(() => {
-    const surveyItems: ActivityItem[] = surveyActivity.map((row) => ({
-      id: `survey-${row.id}`,
-      kind: 'survey',
-      title: 'Survey completed',
-      meta: `${row.surveyName} · +${row.rewardEarned.toLocaleString()} pts · ${row.completionDate}`,
-      sortKey: new Date(row.completionDate).getTime() || 0,
-    }));
-
-    const redeemItems: ActivityItem[] = redemptionHistory.map((row) => {
-      const lower = row.status.toLowerCase();
-      const kind = lower.includes('approv') || lower.includes('complete') ? 'approved' : 'redeem';
-      return {
-        id: `redeem-${row.id}`,
-        kind,
-        title: redemptionActivityTitle(row.status),
-        meta: `${row.rewardAmount.toLocaleString()} pts via ${row.method} · ${row.requestDate}`,
-        sortKey: new Date(row.requestDate).getTime() || 0,
-      };
-    });
-
-    return [...surveyItems, ...redeemItems].sort((a, b) => b.sortKey - a.sortKey).slice(0, 8);
-  }, [surveyActivity, redemptionHistory]);
 
   const lastActivity = getLastActivityLabel(
     surveyActivity.map((row) => row.completionDate),
@@ -260,7 +207,7 @@ export default function PanelistDashboardPage() {
         </div>
       </motion.section>
 
-      <motion.section className="pdash__section" {...fadeUp} transition={{ duration: 0.35, delay: 0.12 }} aria-labelledby="pdash-actions-heading">
+      <motion.section className="pdash__section pdash__section--last" {...fadeUp} transition={{ duration: 0.35, delay: 0.12 }} aria-labelledby="pdash-actions-heading">
         <div className="pdash__section-head">
           <div>
             <h2 id="pdash-actions-heading">Quick actions</h2>
@@ -292,108 +239,6 @@ export default function PanelistDashboardPage() {
             </span>
             <ArrowRight size={16} className="pdash-action__arrow" aria-hidden="true" />
           </Link>
-        </div>
-      </motion.section>
-
-      <motion.section className="pdash__section" {...fadeUp} transition={{ duration: 0.35, delay: 0.16 }} aria-labelledby="pdash-activity-heading">
-        <div className="pdash__section-head">
-          <div>
-            <h2 id="pdash-activity-heading">Recent activity</h2>
-            <p>A lightweight timeline of your latest events.</p>
-          </div>
-        </div>
-        <article className="pdash-panel">
-          {isLoading ? (
-            <div className="pdash-skeleton pdash-skeleton--activity" aria-hidden="true" />
-          ) : recentActivity.length === 0 ? (
-            <div className="pdash-activity__empty">No recent activity yet. Complete a survey to get started.</div>
-          ) : (
-            <div className="pdash-timeline">
-              {recentActivity.map((item, index) => (
-                <article key={item.id} className="pdash-timeline__item">
-                  <div className="pdash-timeline__marker">
-                    <span className={`pdash-timeline__dot pdash-timeline__dot--${item.kind}`}>
-                      {item.kind === 'approved' ? <CheckCircle2 size={10} /> : null}
-                    </span>
-                    {index < recentActivity.length - 1 ? <span className="pdash-timeline__line" /> : null}
-                  </div>
-                  <div>
-                    <p className="pdash-timeline__title">{item.title}</p>
-                    <p className="pdash-timeline__meta">{item.meta}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </article>
-      </motion.section>
-
-      <motion.section className="pdash__section" {...fadeUp} transition={{ duration: 0.35, delay: 0.2 }} aria-labelledby="pdash-redemptions-heading">
-        <div className="pdash__section-head">
-          <div>
-            <h2 id="pdash-redemptions-heading">Recent redemption requests</h2>
-            <p>Latest payout requests and their approval status.</p>
-          </div>
-        </div>
-        <article className="pdash-panel">
-          {isLoading ? (
-            <div className="pdash-skeleton pdash-skeleton--table" aria-hidden="true" />
-          ) : redemptionHistory.length === 0 ? (
-            <div className="pdash-empty">
-              <div className="pdash-empty__icon"><TrendingUp size={20} aria-hidden="true" /></div>
-              <p className="pdash-empty__title">No redemption requests yet</p>
-              <p className="pdash-empty__desc">Submit a redemption request to see it here.</p>
-            </div>
-          ) : (
-            <>
-              <div className="pdash-table-wrap">
-                <table className="pdash-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Amount</th>
-                      <th>Method</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {redemptionHistory.map((row) => (
-                      <tr key={row.id}>
-                        <td>{row.requestDate}</td>
-                        <td className="pdash-table__reward">{row.rewardAmount.toLocaleString()} pts</td>
-                        <td>{row.method}</td>
-                        <td><StatusBadge status={row.status} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {redeemTotalPages > 1 ? (
-                <div className="pdash-pagination">
-                  <button type="button" disabled={redeemPage <= 1} onClick={() => setRedeemPage((p) => Math.max(1, p - 1))}>Previous</button>
-                  <span>Page {redeemPage} of {redeemTotalPages}</span>
-                  <button type="button" disabled={redeemPage >= redeemTotalPages} onClick={() => setRedeemPage((p) => p + 1)}>Next</button>
-                </div>
-              ) : null}
-            </>
-          )}
-        </article>
-      </motion.section>
-
-      <motion.section className="pdash__section" {...fadeUp} transition={{ duration: 0.35, delay: 0.24 }} aria-labelledby="pdash-tips-heading">
-        <div className="pdash__section-head">
-          <div>
-            <h2 id="pdash-tips-heading">Community insights</h2>
-            <p>Helpful tips to get the most from your membership.</p>
-          </div>
-        </div>
-        <div className="pdash-tips">
-          {tips.map((tip) => (
-            <article key={tip} className="pdash-tip">
-              <Lightbulb size={16} aria-hidden="true" />
-              <p>{tip}</p>
-            </article>
-          ))}
         </div>
       </motion.section>
     </section>

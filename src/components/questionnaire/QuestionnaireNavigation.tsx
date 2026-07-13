@@ -40,7 +40,7 @@ export default function QuestionnaireNavigation({
 
       {isLast ? (
         <Button
-          variant="gradient"
+          variant="primary"
           onClick={onSubmit}
           disabled={isSubmitting}
           className="q-nav__btn q-nav__btn--next"
@@ -49,7 +49,7 @@ export default function QuestionnaireNavigation({
         </Button>
       ) : (
         <Button
-          variant="gradient"
+          variant="primary"
           onClick={onNext}
           disabled={isSubmitting}
           className="q-nav__btn q-nav__btn--next"

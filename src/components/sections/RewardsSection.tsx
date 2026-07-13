@@ -57,7 +57,9 @@ export default function RewardsSection() {
                 key={reward.id}
                 className={`rewards-v2__partner reveal reveal--delay-${(index % 3) + 1} ${className.includes('reveal--visible') ? 'reveal--visible' : ''}`}
               >
-                <img src={reward.logo} alt={reward.name} loading="lazy" />
+                <div className="rewards-v2__partner-logo">
+                  <img src={reward.logo} alt={reward.name} loading="lazy" />
+                </div>
               </div>
             ))}
           </div>

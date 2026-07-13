@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Logo from '../ui/Logo';
 import {
   footerQuickLinks,
+  footerQuickLinksAuthenticated,
   footerCommunityLinks,
   socialLinks,
   contactInfo,
@@ -9,14 +10,6 @@ import {
 import { useAuthModal } from '../../context/AuthModalContext';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
 import './Footer.css';
-
-const authenticatedQuickLinks = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Home', path: '/home' },
-  { label: 'Redeem Rewards', path: '/redeem-rewards' },
-  { label: 'Redeem History', path: '/redeem-history' },
-  { label: 'Settings', path: '/settings' },
-];
 
 function SocialIcon({ icon }: { icon: string }) {
   switch (icon) {
@@ -53,7 +46,12 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const { openLogin, openSignup } = useAuthModal();
   const { isAuthenticated } = usePanelistAuth();
-  const quickLinks = isAuthenticated ? authenticatedQuickLinks : footerQuickLinks;
+
+  const quickLinks = isAuthenticated ? footerQuickLinksAuthenticated : footerQuickLinks;
+
+  const communityLinks = isAuthenticated
+    ? footerCommunityLinks.filter((link) => !('action' in link))
+    : footerCommunityLinks;
 
   return (
     <footer className="footer">
@@ -74,35 +72,33 @@ export default function Footer() {
           <h4 className="footer__heading">Quick Links</h4>
           <ul>
             {quickLinks.map((link) => (
-              <li key={link.path}>
+              <li key={`${link.label}-${link.path}`}>
                 <Link to={link.path}>{link.label}</Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {!isAuthenticated ? (
-          <div className="footer__column">
-            <h4 className="footer__heading">Community</h4>
-            <ul>
-              {footerCommunityLinks.map((link) => (
-                <li key={link.label}>
-                  {'action' in link ? (
-                    <button
-                      type="button"
-                      className="footer__auth-link"
-                      onClick={() => (link.action === 'login' ? openLogin() : openSignup())}
-                    >
-                      {link.label}
-                    </button>
-                  ) : (
-                    <Link to={link.path}>{link.label}</Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+        <div className="footer__column">
+          <h4 className="footer__heading">Community</h4>
+          <ul>
+            {communityLinks.map((link) => (
+              <li key={link.label}>
+                {'action' in link ? (
+                  <button
+                    type="button"
+                    className="footer__auth-link"
+                    onClick={() => (link.action === 'login' ? openLogin() : openSignup())}
+                  >
+                    {link.label}
+                  </button>
+                ) : (
+                  <Link to={isAuthenticated ? '/home#rewards' : link.path}>{link.label}</Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="footer__column">
           <h4 className="footer__heading">Contact Us</h4>

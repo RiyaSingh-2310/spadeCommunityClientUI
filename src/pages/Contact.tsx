@@ -143,7 +143,7 @@ export default function Contact() {
                   onChange={(event) => setFormData((prev) => ({ ...prev, message: event.target.value }))}
                   required
                 />
-                <Button type="submit" variant="gradient" size="md">
+                <Button type="submit" variant="primary" size="md">
                   Send Message
                 </Button>
               </form>

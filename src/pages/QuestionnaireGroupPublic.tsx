@@ -105,7 +105,7 @@ export default function QuestionnaireGroupPublic() {
               note="You can now close this page."
               actions={
                 <Button
-                  variant="gradient"
+                  variant="primary"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
                       window.close();
