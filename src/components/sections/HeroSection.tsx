@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Sparkles, Shield, Users, TrendingUp } from 'lucide-react';
 import JoinForm from '../ui/JoinForm';
 import HeroStateCard from '../ui/HeroStateCard';
 import { useOnboardingState } from '../../hooks/useOnboardingState';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
+import { usePanelistAuth } from '../../context/PanelistAuthContext';
+import { useAutoDismiss } from '../../hooks/useAutoDismiss';
+import { clearSignupSuccess } from '../../utils/signupSession';
 import './HeroSection.css';
 
 const highlights = [
@@ -18,12 +21,29 @@ const memberHighlights = [
   'Participation status updates as new opportunities become available',
 ];
 
+const VERIFY_CARD_MS = 5000;
+const VERIFY_FADE_MS = 400;
+
 export default function HeroSection() {
   const { ref: leftRef, className: leftClass } = useScrollReveal();
   const { ref: rightRef, isVisible: rightVisible } = useScrollReveal();
+  const { isAuthenticated } = usePanelistAuth();
   const [captchaReady, setCaptchaReady] = useState(false);
   const [onboardingRefresh, setOnboardingRefresh] = useState(0);
   const onboarding = useOnboardingState(onboardingRefresh);
+
+  const handleVerifyDismiss = useCallback(() => {
+    clearSignupSuccess();
+    setOnboardingRefresh((v) => v + 1);
+    window.dispatchEvent(new CustomEvent('onboarding-updated'));
+  }, []);
+
+  const { exiting: verifyExiting } = useAutoDismiss({
+    active: !isAuthenticated && onboarding.phase === 'registered',
+    delayMs: VERIFY_CARD_MS,
+    fadeMs: VERIFY_FADE_MS,
+    onDismiss: handleVerifyDismiss,
+  });
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)');
@@ -49,13 +69,18 @@ export default function HeroSection() {
     return () => mq.removeEventListener('change', onChange);
   }, [rightVisible]);
 
+  const showMemberCopy = !isAuthenticated && onboarding.phase === 'member';
   const showJoinForm = onboarding.phase === 'none';
-  const isMember = onboarding.phase === 'member';
-  const listItems = isMember ? memberHighlights : highlights;
-  const showRightCard = !isMember;
+  const showRightCard = !isAuthenticated && onboarding.phase !== 'member';
+  const isExpandedHero = isAuthenticated || onboarding.phase === 'member';
+  const listItems = showMemberCopy ? memberHighlights : highlights;
+  const showVerifyCard =
+    !isAuthenticated && (onboarding.phase === 'registered' || verifyExiting);
 
   return (
-    <section className={`hero-v2${isMember ? ' hero-v2--member' : ''}`}>
+    <section
+      className={`hero-v2${isExpandedHero ? ' hero-v2--expanded' : ''}${showMemberCopy ? ' hero-v2--member' : ''}`}
+    >
       <div className="hero-v2__backdrop" aria-hidden="true">
         <div className="hero-v2__mesh" />
         <span className="hero-v2__orb hero-v2__orb--1" />
@@ -64,15 +89,20 @@ export default function HeroSection() {
         <span className="hero-v2__grid" />
       </div>
 
-      <div className={`hero-v2__inner container-wide${isMember ? ' hero-v2__inner--member hero-v2__inner--single' : ''}`}>
-        <div ref={leftRef} className={`hero-v2__copy ${leftClass}${isMember ? ' hero-v2__copy--member' : ''}`}>
+      <div
+        className={`hero-v2__inner container-wide${isExpandedHero ? ' hero-v2__inner--single' : ''}`}
+      >
+        <div
+          ref={leftRef}
+          className={`hero-v2__copy ${leftClass}${isExpandedHero ? ' hero-v2__copy--expanded' : ''}${showMemberCopy ? ' hero-v2__copy--member' : ''}`}
+        >
           <div className="hero-v2__badge">
             <Sparkles size={14} />
-            {isMember ? 'Community Member' : 'Premium Research Community'}
+            {showMemberCopy ? 'Community Member' : 'Premium Research Community'}
           </div>
 
           <h1 className="hero-v2__title">
-            {isMember ? (
+            {showMemberCopy ? (
               <>
                 You&apos;re all set.
                 <span className="hero-v2__title-gradient"> Welcome back.</span>
@@ -86,7 +116,7 @@ export default function HeroSection() {
           </h1>
 
           <p className="hero-v2__lead">
-            {isMember
+            {showMemberCopy
               ? 'Your onboarding is complete. Explore your dashboard, track rewards, and stay ready for your next research opportunity.'
               : 'Join an exclusive panel of verified members contributing to meaningful research — with transparent rewards and enterprise-grade privacy.'}
           </p>
@@ -111,18 +141,6 @@ export default function HeroSection() {
               <span>$2 Welcome Bonus</span>
             </div>
           </div>
-
-          {/* <div className="hero-v2__metrics">
-            {statistics.slice(0, 3).map((stat) => (
-              <div key={stat.id} className="hero-v2__metric">
-                <strong>
-                  {stat.value}
-                  {stat.suffix}
-                </strong>
-                <span>{stat.label}</span>
-              </div>
-            ))}
-          </div> */}
         </div>
 
         {showRightCard ? (
@@ -133,7 +151,7 @@ export default function HeroSection() {
             <div className="hero-v2__panel-glow" aria-hidden="true" />
             <div className="hero-v2__panel-card">
               {showJoinForm ? (
-                <>
+                <div className="hero-v2__panel-form" key="join-form">
                   <div className="hero-v2__panel-header">
                     <div>
                       <p className="hero-v2__panel-eyebrow">Start in minutes</p>
@@ -145,9 +163,16 @@ export default function HeroSection() {
                     captchaActive={captchaReady}
                     onSignupSuccess={() => setOnboardingRefresh((v) => v + 1)}
                   />
-                </>
+                </div>
               ) : (
-                <HeroStateCard phase={onboarding.phase} email={onboarding.email} />
+                <div
+                  className={`hero-v2__panel-state${showVerifyCard && verifyExiting ? ' hero-v2__panel-state--exiting' : ' hero-v2__panel-state--enter'}`}
+                >
+                  <HeroStateCard
+                    phase={showVerifyCard ? 'registered' : onboarding.phase}
+                    email={onboarding.email}
+                  />
+                </div>
               )}
             </div>
           </div>

@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
-import { CheckCircle2, User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock } from 'lucide-react';
 import Input from './Input';
 import Button from './Button';
 import Captcha from './Captcha';
-import SuccessState from './SuccessState';
 import { signup } from '../../api/auth';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
 import { getSignupRequestErrorMessage } from '../../utils/apiErrors';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
@@ -52,8 +50,6 @@ export default function JoinForm({
   const [captchaResetKey, setCaptchaResetKey] = useState(0);
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitted, setSubmitted] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [registeredEmail, setRegisteredEmail] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -67,36 +63,39 @@ export default function JoinForm({
     ? captchaActive
     : captchaActive && activeModal !== 'signup';
 
+  const resetFormState = useCallback(() => {
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    });
+    setCaptchaToken('');
+    setCaptchaResetKey((key) => key + 1);
+    setErrors({});
+    setSubmitted(false);
+    setSubmitError('');
+    setShowValidation(false);
+    setIsSubmitting(false);
+  }, []);
+
   useEffect(() => {
+    // Create Account modal must always open on a fresh registration form.
+    if (isModal) {
+      if (activeModal === 'signup') {
+        resetFormState();
+      }
+      return;
+    }
+
     if (getMemberComplete()) {
       setSubmitted(false);
-      setSuccessMessage('');
-      setRegisteredEmail('');
       return;
     }
 
     const saved = getSignupSuccess();
-    if (saved) {
-      setSubmitted(true);
-      setSuccessMessage(saved.message);
-      setRegisteredEmail(saved.email);
-      return;
-    }
-
-    setSubmitted(false);
-    setSuccessMessage('');
-    setRegisteredEmail('');
-  }, [location.pathname]);
-
-  const handleModalDismiss = useCallback(() => {
-    onSignupModalClose?.();
-  }, [onSignupModalClose]);
-
-  const { exiting, dismissNow } = useAutoDismiss({
-    active: submitted && isModal,
-    delayMs: 4000,
-    onDismiss: handleModalDismiss,
-  });
+    setSubmitted(Boolean(saved));
+  }, [isModal, location.pathname, resetFormState, activeModal]);
 
   useEffect(() => {
     if (!captchaActive) {
@@ -191,17 +190,25 @@ export default function JoinForm({
 
       const message =
         response.message || 'Signup successful! Please check your email to activate your account.';
-      setSuccessMessage(message);
-      setRegisteredEmail(trimmedEmail);
+
       saveSignupSuccess({
         message,
         email: trimmedEmail,
         completedAt: new Date().toISOString(),
         questionnaireUrl: response.data?.questionnaire_url,
       });
-      setSubmitted(true);
+
       onSignupSuccess?.();
       window.dispatchEvent(new CustomEvent('onboarding-updated'));
+
+      // Create Account modal: always close to a clean state — never show success/verify UI.
+      if (isModal) {
+        resetFormState();
+        onSignupModalClose?.();
+        return;
+      }
+
+      setSubmitted(true);
     } catch (error) {
       setSubmitError(getSignupRequestErrorMessage(error));
       resetCaptcha();
@@ -227,35 +234,9 @@ export default function JoinForm({
     return captchaRequired && errors.captchaToken ? { captchaToken: errors.captchaToken } : {};
   }, [showValidation, errors, captchaRequired]);
 
-  if (submitted) {
-    if (!isModal) {
-      return null;
-    }
-
-    return (
-      <div className={`join-form join-form--success join-form--modal ${className}`}>
-        <SuccessState
-          icon={CheckCircle2}
-          eyebrow="Registration Complete"
-          title="Sign Up Successful"
-          body={successMessage || 'Please check your email to activate your account.'}
-          meta={
-            registeredEmail ? (
-              <>
-                A verification email has been sent to <strong>{registeredEmail}</strong>.
-              </>
-            ) : undefined
-          }
-          note="Please activate your account using the link provided in the email."
-          autoHint="Returning to home…"
-          iconVariant="violet"
-          exiting={exiting}
-        />
-        <button type="button" className="auth-modal__skip-close" onClick={dismissNow}>
-          Close now
-        </button>
-      </div>
-    );
+  // Hero form yields to the Verify Email card after successful registration.
+  if (submitted && !isModal) {
+    return null;
   }
 
   return (
