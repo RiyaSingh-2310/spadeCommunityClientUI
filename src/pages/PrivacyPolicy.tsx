@@ -92,8 +92,8 @@ const sections = [
       <>
         <p>If you have questions about this Privacy Policy, please contact us at:</p>
         <p>
-          Spade Market Research (P) Ltd<br />
-          #1108, Ace City, Greater Noida, UP-201306, India<br />
+          {/* Spade Market Research (P) Ltd<br />
+          #1108, Ace City, Greater Noida, UP-201306, India<br /> */}
           Email: support@spade-community.com
         </p>
       </>
