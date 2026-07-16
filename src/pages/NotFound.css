@@ -1,0 +1,138 @@
+.not-found {
+  position: relative;
+  min-height: calc(100vh - var(--header-height));
+  display: grid;
+  place-items: center;
+  padding: calc(var(--header-height) + 48px) 20px 64px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9) 0%, #fff 40%);
+}
+
+.not-found__backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.not-found__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.55;
+}
+
+.not-found__orb--1 {
+  top: 12%;
+  left: 8%;
+  width: 280px;
+  height: 280px;
+  background: rgba(79, 70, 229, 0.12);
+}
+
+.not-found__orb--2 {
+  right: 10%;
+  bottom: 18%;
+  width: 240px;
+  height: 240px;
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.not-found__card {
+  position: relative;
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding: clamp(32px, 5vw, 48px);
+  text-align: center;
+  border-radius: 24px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 18px 48px rgba(15, 23, 42, 0.06);
+  animation: not-found-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.not-found__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  color: #4f46e5;
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.not-found__code {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gray-500);
+}
+
+.not-found__card h1 {
+  margin: 0;
+  font-size: clamp(1.65rem, 4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-primary);
+}
+
+.not-found__body {
+  margin: 12px auto 0;
+  max-width: 42ch;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: var(--color-gray-600);
+}
+
+.not-found__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.not-found__actions .btn {
+  gap: 8px;
+}
+
+.not-found__links {
+  margin: 22px 0 0;
+  font-size: 0.86rem;
+  color: var(--color-gray-500);
+}
+
+.not-found__links a {
+  color: var(--color-secondary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.not-found__links a:hover {
+  text-decoration: underline;
+}
+
+@keyframes not-found-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .not-found__actions {
+    flex-direction: column;
+  }
+
+  .not-found__actions .btn {
+    width: 100%;
+  }
+}

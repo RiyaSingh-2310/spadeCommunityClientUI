@@ -17,10 +17,12 @@ import PanelistRedeemPage from './pages/panelist/PanelistRedeemPage';
 import PanelistRedeemHistoryPage from './pages/panelist/PanelistRedeemHistoryPage';
 import PanelistSettingsPage from './pages/panelist/PanelistSettingsPage';
 import Home from './pages/Home';
+import NotFound, { RouteErrorPage } from './pages/NotFound';
 
 const router = createBrowserRouter([
   {
     element: <QuestionnaireLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/questionnaire', element: <Questionnaire /> },
       { path: '/questionnaire/:secureToken', element: <Questionnaire /> },
@@ -30,6 +32,7 @@ const router = createBrowserRouter([
   },
   {
     element: <ActivationLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/activate', element: <AccountActivation /> },
       { path: '/activate/:token', element: <AccountActivation /> },
@@ -37,6 +40,7 @@ const router = createBrowserRouter([
   },
   {
     element: <Layout />,
+    errorElement: <RouteErrorPage />,
     children: [
       { path: '/', element: <Home /> },
       { path: '/home', element: <Home /> },
@@ -60,8 +64,10 @@ const router = createBrowserRouter([
           { path: '/member/rewards', element: <Navigate to="/redeem-rewards" replace /> },
         ],
       },
+      { path: '*', element: <NotFound /> },
     ],
   },
+  { path: '*', element: <NotFound />, errorElement: <RouteErrorPage /> },
 ]);
 
 export default function App() {
