@@ -1,11 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2, LogOut, Save, Settings, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../../api/ApiError';
 import { changeMyPassword, getMyProfile, updateMyProfile } from '../../api/panelist';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
+import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import './PanelistPortal.css';
+
+const PROFILE_SUCCESS_MS = 5000;
+const PROFILE_SUCCESS_FADE_MS = 400;
 
 export default function PanelistSettingsPage() {
   const navigate = useNavigate();
@@ -24,6 +28,17 @@ export default function PanelistSettingsPage() {
   const [profileMessage, setProfileMessage] = useState('');
   const [passwordMessage, setPasswordMessage] = useState('');
   const [error, setError] = useState('');
+
+  const clearProfileMessage = useCallback(() => {
+    setProfileMessage('');
+  }, []);
+
+  const { exiting: profileMessageExiting } = useAutoDismiss({
+    active: Boolean(profileMessage),
+    delayMs: PROFILE_SUCCESS_MS,
+    fadeMs: PROFILE_SUCCESS_FADE_MS,
+    onDismiss: clearProfileMessage,
+  });
 
   useEffect(() => {
     void getMyProfile()
@@ -46,10 +61,12 @@ export default function PanelistSettingsPage() {
     try {
       const updated = await updateMyProfile({
         name: fullName.trim(),
-        email: email.trim(),
         phone: phoneNumber.trim(),
       });
       updateUser(updated);
+      setFullName(updated.name);
+      setEmail(updated.email);
+      setPhoneNumber(updated.phone ?? '');
       setProfileMessage('Profile updated successfully.');
     } catch (submitError) {
       setError(submitError instanceof ApiError ? submitError.message : 'Unable to update profile.');
@@ -125,7 +142,14 @@ export default function PanelistSettingsPage() {
             </label>
             <label>
               Email
-              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+              <input
+                type="email"
+                value={email}
+                readOnly
+                disabled
+                aria-readonly="true"
+                className="pdash-input--readonly"
+              />
             </label>
             <label>
               Phone Number
@@ -137,7 +161,12 @@ export default function PanelistSettingsPage() {
               />
             </label>
             {profileMessage ? (
-              <p className="pdash-message pdash-message--success">{profileMessage}</p>
+              <p
+                className={`pdash-message pdash-message--success${profileMessageExiting ? ' pdash-message--exiting' : ''}`}
+                role="status"
+              >
+                {profileMessage}
+              </p>
             ) : null}
             <button type="submit" className="pdash-btn pdash-btn--block" disabled={isSavingProfile}>
               {isSavingProfile ? <Loader2 size={16} className="pdash-spin" /> : <Save size={16} />}

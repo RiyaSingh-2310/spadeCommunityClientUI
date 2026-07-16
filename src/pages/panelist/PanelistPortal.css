@@ -1190,6 +1190,24 @@
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
 }
 
+.pdash-form input:disabled,
+.pdash-form input[readonly],
+.pdash-form input.pdash-input--readonly {
+  color: var(--color-gray-500);
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(226, 232, 240, 0.95);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.pdash-form input:disabled:focus,
+.pdash-form input[readonly]:focus,
+.pdash-form input.pdash-input--readonly:focus {
+  border-color: rgba(226, 232, 240, 0.95);
+  box-shadow: none;
+}
+
 .pdash-password-wrap {
   display: flex;
   align-items: center;
@@ -1271,6 +1289,8 @@
   padding: 10px 12px;
   font-size: 0.84rem;
   font-weight: 600;
+  animation: pdash-message-in 0.3s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .pdash-message--success {
@@ -1281,6 +1301,22 @@
 .pdash-message--error {
   background: rgba(248, 113, 113, 0.12);
   color: #b91c1c;
+}
+
+.pdash-message--exiting {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes pdash-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .pdash-balance {
