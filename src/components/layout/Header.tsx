@@ -68,8 +68,8 @@ export default function Header() {
     openLogin();
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setProfileOpen(false);
     closeMenu();
     navigate('/');

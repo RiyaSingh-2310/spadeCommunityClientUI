@@ -99,3 +99,25 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
 
   return response;
 }
+
+export interface LogoutResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * POST /api/panelist/logout — call before clearing local session.
+ * Failures are swallowed by the caller so local sign-out can still proceed.
+ */
+export async function logout(): Promise<LogoutResponse> {
+  const response = await apiRequest<LogoutResponse>('/api/panelist/logout', {
+    method: 'POST',
+    body: {},
+  });
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Logout failed. Please try again.', 400);
+  }
+
+  return response;
+}

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { login as loginRequest, type LoginResponse } from '../api/auth';
+import { login as loginRequest, logout as logoutRequest, type LoginResponse } from '../api/auth';
 import { ApiError } from '../api/ApiError';
 import {
   clearPanelistSession,
@@ -14,7 +14,7 @@ interface PanelistAuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<LoginResponse>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (user: PanelistUser) => void;
 }
 
@@ -63,7 +63,12 @@ export function PanelistAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await logoutRequest();
+    } catch {
+      // Clear local session even if the Sign Out API fails.
+    }
     clearPanelistSession();
     setSession(null);
   }, []);
