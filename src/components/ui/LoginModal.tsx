@@ -8,7 +8,8 @@ import SocialLoginButtons from './SocialLoginButtons';
 import SuccessState from './SuccessState';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
-import { ApiError } from '../../api/ApiError';
+import { classifyAuthError, type AuthErrorInfo } from '../../utils/authErrors';
+import { contactInfo } from '../../data/mockData';
 import './AuthModal.css';
 
 export default function LoginModal() {
@@ -19,6 +20,7 @@ export default function LoginModal() {
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [errorInfo, setErrorInfo] = useState<AuthErrorInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -31,6 +33,7 @@ export default function LoginModal() {
     setEmail('');
     setPassword('');
     setError('');
+    setErrorInfo(null);
   }, [closeModal]);
 
   const initiateClose = useCallback(() => {
@@ -43,12 +46,14 @@ export default function LoginModal() {
       setSubmitted(false);
       setIsClosing(false);
       setError('');
+      setErrorInfo(null);
     }
   }, [isOpen]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError('');
+    setErrorInfo(null);
     setIsSubmitting(true);
 
     try {
@@ -59,18 +64,9 @@ export default function LoginModal() {
         navigate('/dashboard');
       }, 320);
     } catch (submitError) {
-      if (submitError instanceof ApiError && submitError.status === 403) {
-        setError(
-          submitError.message ||
-            'Please complete your panel questionnaire before logging in.'
-        );
-      } else {
-        setError(
-          submitError instanceof ApiError
-            ? submitError.message
-            : 'Unable to sign in right now. Please try again.'
-        );
-      }
+      const info = classifyAuthError(submitError, 'login');
+      setErrorInfo(info);
+      setError(info.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,7 +95,19 @@ export default function LoginModal() {
       ) : (
         <>
           <form className="auth-modal__form" onSubmit={(event) => void handleSubmit(event)}>
-            {error ? <p className="auth-modal__error">{error}</p> : null}
+            {error ? (
+              <div className="auth-modal__error" role="alert">
+                <p className="auth-modal__error-text">{error}</p>
+                {errorInfo?.suggestContactSupport ? (
+                  <a
+                    className="auth-modal__error-link"
+                    href={`mailto:${errorInfo.supportEmail}`}
+                  >
+                    Contact Support
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
             <Input
               name="email"
               type="email"
@@ -126,7 +134,9 @@ export default function LoginModal() {
               {isSubmitting ? 'Signing in...' : 'Sign In'}
             </Button>
             <div className="auth-modal__links">
-              <a href="#">Forgot Password</a>
+              <a href={`mailto:${contactInfo.email}?subject=Password%20reset%20request`}>
+                Forgot Password
+              </a>
               <button type="button" onClick={switchToSignup}>
                 Create account
               </button>

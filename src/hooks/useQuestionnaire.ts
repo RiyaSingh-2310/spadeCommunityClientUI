@@ -3,6 +3,8 @@ import { fetchQuestionnaire, submitQuestionnaire } from '../api/questionnaire';
 import { ApiError } from '../api/ApiError';
 import type { AnswersMap, Question, QuestionAnswer, Questionnaire } from '../types/questionnaire';
 import { clearOnboardingState } from '../utils/clearOnboardingState';
+import { getSignupSuccess } from '../utils/signupSession';
+import { saveMemberComplete } from '../utils/memberSession';
 import { getInitialAnswer, validateAnswer } from '../utils/questionnaireValidation';
 
 interface UseQuestionnaireOptions {
@@ -74,7 +76,13 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
           : ''
       );
       if (data.alreadyCompleted) {
+        const signup = getSignupSuccess();
+        saveMemberComplete({
+          email: signup?.email,
+          completedAt: new Date().toISOString(),
+        });
         clearOnboardingState();
+        window.dispatchEvent(new CustomEvent('onboarding-updated'));
       }
     } catch (error) {
       const message =
@@ -158,7 +166,6 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
         response.message || 'Questionnaire submitted successfully! Thank you for completing the survey.'
       );
       setIsComplete(true);
-      clearOnboardingState();
     } catch (error) {
       const message =
         error instanceof ApiError

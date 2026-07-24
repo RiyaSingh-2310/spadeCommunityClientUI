@@ -9,9 +9,20 @@ interface ApiRequestOptions {
 }
 
 function extractMessage(data: unknown, fallback: string): string {
-  if (data && typeof data === 'object' && 'message' in data) {
-    const message = (data as { message?: unknown }).message;
-    if (typeof message === 'string' && message.trim()) return message;
+  if (data && typeof data === 'object') {
+    const record = data as Record<string, unknown>;
+    for (const key of ['message', 'error', 'detail']) {
+      const value = record[key];
+      if (typeof value === 'string' && value.trim()) return value.trim();
+    }
+    if (Array.isArray(record.errors) && record.errors.length > 0) {
+      const first = record.errors[0];
+      if (typeof first === 'string' && first.trim()) return first.trim();
+      if (first && typeof first === 'object' && 'message' in first) {
+        const nested = (first as { message?: unknown }).message;
+        if (typeof nested === 'string' && nested.trim()) return nested.trim();
+      }
+    }
   }
   return fallback;
 }

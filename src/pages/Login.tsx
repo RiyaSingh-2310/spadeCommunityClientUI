@@ -54,7 +54,9 @@ export default function Login() {
                 Login
               </Button>
               <div className="auth-card__links">
-                <a href="#">Forgot Password</a>
+                <a href={`mailto:support@spade-community.com?subject=Password%20reset%20request`}>
+                  Forgot Password
+                </a>
                 <Link to="/join">Create Account</Link>
               </div>
             </form>

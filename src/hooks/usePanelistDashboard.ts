@@ -10,6 +10,7 @@ import {
   type RewardSettings,
 } from '../api/panelist';
 import { usePanelistAuth } from '../context/PanelistAuthContext';
+import { getRequestErrorMessage } from '../utils/apiErrors';
 
 export interface SurveyActivityRow {
   id: string;
@@ -35,6 +36,12 @@ export interface DashboardStats {
   pendingRedemptions: number;
   approvedRedemptions: number;
   rejectedRedemptions: number;
+}
+
+interface RewardSummary {
+  totalCredit: number;
+  totalDebit: number;
+  totalBalance: number;
 }
 
 function formatDate(value: string) {
@@ -71,6 +78,11 @@ function countByStatus(requests: RedeemRequestItem[], matcher: (s: string) => bo
   return requests.filter((item) => matcher((item.status || '').toLowerCase())).length;
 }
 
+function toFiniteNumber(value: unknown, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export function usePanelistDashboard() {
   const { user, updateUser } = usePanelistAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -78,6 +90,7 @@ export function usePanelistDashboard() {
   const [rewardHistory, setRewardHistory] = useState<RewardHistoryItem[]>([]);
   const [redeemRequests, setRedeemRequests] = useState<RedeemRequestItem[]>([]);
   const [rewardSettings, setRewardSettings] = useState<RewardSettings | null>(null);
+  const [rewardSummary, setRewardSummary] = useState<RewardSummary | null>(null);
   const [historyPage, setHistoryPage] = useState(1);
   const [historyTotalPages, setHistoryTotalPages] = useState(1);
   const [redeemPage, setRedeemPage] = useState(1);
@@ -100,8 +113,20 @@ export function usePanelistDashboard() {
       setHistoryTotalPages(historyRes.totalPages || 1);
       setRedeemTotalPages(redeemRes.totalPages || 1);
       setRewardSettings(settingsRes);
-    } catch {
-      setError('Unable to load dashboard data right now.');
+
+      if (historyRes.summary) {
+        setRewardSummary({
+          totalCredit: toFiniteNumber(historyRes.summary.total_credit),
+          totalDebit: toFiniteNumber(historyRes.summary.total_debit),
+          totalBalance: toFiniteNumber(historyRes.summary.total_balance, profile.balance_point),
+        });
+      } else {
+        setRewardSummary(null);
+      }
+    } catch (loadError) {
+      setError(
+        getRequestErrorMessage(loadError, 'Unable to load dashboard data right now. Please refresh and try again.')
+      );
       setRewardHistory([]);
       setRedeemRequests([]);
     } finally {
@@ -113,14 +138,43 @@ export function usePanelistDashboard() {
     void loadDashboard();
   }, [loadDashboard]);
 
+  // Refresh balances/history when user returns to the tab (e.g. after admin approval).
+  useEffect(() => {
+    let timer: number | undefined;
+
+    const scheduleRefresh = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        if (document.visibilityState === 'visible') {
+          void loadDashboard();
+        }
+      }, 350);
+    };
+
+    window.addEventListener('focus', scheduleRefresh);
+    document.addEventListener('visibilitychange', scheduleRefresh);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', scheduleRefresh);
+      document.removeEventListener('visibilitychange', scheduleRefresh);
+    };
+  }, [loadDashboard]);
+
   const stats = useMemo<DashboardStats>(() => {
-    const summaryCredit = rewardHistory
+    const pageCredit = rewardHistory
       .filter((item) => Number(item.reward_points) > 0)
       .reduce((sum, item) => sum + Number(item.reward_points), 0);
 
-    const totalEarned = summaryCredit;
-    const availableBalance = Number(user?.balance_point ?? 0);
-    const totalRedeemed = Math.max(0, totalEarned - availableBalance);
+    const availableBalance = toFiniteNumber(
+      user?.balance_point ?? rewardSummary?.totalBalance,
+      0
+    );
+    const totalEarned = rewardSummary
+      ? rewardSummary.totalCredit
+      : pageCredit;
+    const totalRedeemed = rewardSummary
+      ? rewardSummary.totalDebit
+      : Math.max(0, totalEarned - availableBalance);
     const surveysCompleted = rewardHistory.filter((item) => {
       const type = (item.transaction_type || '').toLowerCase();
       return type.includes('credit') || Number(item.reward_points) > 0;
@@ -135,7 +189,7 @@ export function usePanelistDashboard() {
       approvedRedemptions: countByStatus(redeemRequests, (s) => s.includes('approv') || s.includes('complete')),
       rejectedRedemptions: countByStatus(redeemRequests, (s) => s.includes('reject')),
     };
-  }, [rewardHistory, redeemRequests, user?.balance_point]);
+  }, [rewardHistory, redeemRequests, rewardSummary, user?.balance_point]);
 
   const surveyActivity = useMemo(
     () => rewardHistory.map(mapSurveyRow).filter((row): row is SurveyActivityRow => row !== null),

@@ -66,6 +66,7 @@ export default function Questionnaire() {
   useEffect(() => {
     if (!isComplete || memberSaved) return;
 
+    // Persist member state before clearing signup session (email needed).
     const signup = getSignupSuccess();
     saveMemberComplete({
       email: signup?.email,
@@ -152,7 +153,7 @@ export default function Questionnaire() {
               note={
                 <>
                   <Sparkles size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-                  You&apos;re all set. New study invitations will arrive based on your profile.
+                  You&apos;re all set. Sign in with your email and password to open your dashboard.
                 </>
               }
               actions={

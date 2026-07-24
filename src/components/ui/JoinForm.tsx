@@ -7,7 +7,7 @@ import Captcha from './Captcha';
 import { signup } from '../../api/auth';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { getSignupCaptchaToken, isSignupCaptchaRequired } from '../../config/signup';
-import { getSignupRequestErrorMessage } from '../../utils/apiErrors';
+import { classifyAuthError, type AuthErrorInfo } from '../../utils/authErrors';
 import { getSignupValidationErrors, isSignupFormValid } from '../../utils/validation';
 import { getMemberComplete } from '../../utils/memberSession';
 import { getSignupSuccess, saveSignupSuccess } from '../../utils/signupSession';
@@ -51,6 +51,7 @@ export default function JoinForm({
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [submitErrorInfo, setSubmitErrorInfo] = useState<AuthErrorInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
 
@@ -58,10 +59,18 @@ export default function JoinForm({
   const isModal = variant === 'modal';
   const inputVariant = 'default';
   const captchaRequired = isSignupCaptchaRequired();
-  const { activeModal } = useAuthModal();
+  const { activeModal, openLogin } = useAuthModal();
   const shouldMountCaptcha = isModal
     ? captchaActive
     : captchaActive && activeModal !== 'signup';
+
+  const handleTryLogin = useCallback(() => {
+    if (onSwitchToLogin) {
+      onSwitchToLogin();
+      return;
+    }
+    openLogin();
+  }, [onSwitchToLogin, openLogin]);
 
   const resetFormState = useCallback(() => {
     setFormData({
@@ -77,6 +86,7 @@ export default function JoinForm({
     setSubmitError('');
     setShowValidation(false);
     setIsSubmitting(false);
+    setSubmitErrorInfo(null);
   }, []);
 
   useEffect(() => {
@@ -160,6 +170,7 @@ export default function JoinForm({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitError('');
+    setSubmitErrorInfo(null);
     setShowValidation(true);
 
     if (!validate()) return;
@@ -210,7 +221,9 @@ export default function JoinForm({
 
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(getSignupRequestErrorMessage(error));
+      const info = classifyAuthError(error, 'signup');
+      setSubmitErrorInfo(info);
+      setSubmitError(info.message);
       resetCaptcha();
     } finally {
       setIsSubmitting(false);
@@ -226,7 +239,10 @@ export default function JoinForm({
         return next;
       });
     }
-    if (submitError) setSubmitError('');
+    if (submitError) {
+      setSubmitError('');
+      setSubmitErrorInfo(null);
+    }
   };
 
   const displayErrors = useMemo(() => {
@@ -252,11 +268,23 @@ export default function JoinForm({
         </div>
       )}
 
-      {submitError && (
+      {submitError ? (
         <div className="join-form__error" role="alert">
-          {submitError}
+          <p className="join-form__error-text">{submitError}</p>
+          {submitErrorInfo?.suggestContactSupport || submitErrorInfo?.suggestLogin ? (
+            <div className="join-form__error-actions">
+              {submitErrorInfo.suggestLogin ? (
+                <button type="button" onClick={handleTryLogin} disabled={isSubmitting}>
+                  Try Login
+                </button>
+              ) : null}
+              {submitErrorInfo.suggestContactSupport ? (
+                <a href={`mailto:${submitErrorInfo.supportEmail}`}>Contact Support</a>
+              ) : null}
+            </div>
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       <Input
         name="name"

@@ -9,6 +9,20 @@
   font-size: 0.875rem;
 }
 
+.auth-modal__error-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.auth-modal__error-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-weight: 700;
+  color: #991b1b;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .auth-modal__links {
   display: flex;
   justify-content: space-between;

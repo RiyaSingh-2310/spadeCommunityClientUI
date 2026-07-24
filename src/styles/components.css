@@ -201,9 +201,40 @@
   font-size: 0.875rem;
 }
 
+.join-form__error-text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.join-form__error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.join-form__error-actions a,
+.join-form__error-actions button {
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b91c1c;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .join-form--modal .join-form__error {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
+  color: #fecaca;
+}
+
+.join-form--modal .join-form__error-actions a,
+.join-form--modal .join-form__error-actions button {
   color: #fecaca;
 }
 
