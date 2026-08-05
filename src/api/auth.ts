@@ -121,3 +121,70 @@ export async function logout(): Promise<LogoutResponse> {
 
   return response;
 }
+
+export interface PasswordResetRequestPayload {
+  email: string;
+}
+
+export interface PasswordResetResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * POST /api/panelist/forgot-password — request a password reset OTP.
+ *
+ * Backend contract assumed from existing auth endpoints (signup/login):
+ * { success: boolean, message: string }
+ */
+export async function requestPasswordReset(
+  payload: PasswordResetRequestPayload
+): Promise<PasswordResetResponse> {
+  const response = await apiRequest<PasswordResetResponse>('/api/panelist/forgot-password', {
+    method: 'POST',
+    body: {
+      email: payload.email,
+    },
+    token: '',
+  });
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Unable to send reset OTP.', 400);
+  }
+
+  return response;
+}
+
+export interface PasswordResetOtpPayload {
+  email: string;
+  otp: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+/**
+ * POST /api/panelist/reset-password — reset password using OTP.
+ *
+ * Assumed response contract:
+ * { success: boolean, message: string }
+ */
+export async function resetPasswordWithOtp(
+  payload: PasswordResetOtpPayload
+): Promise<PasswordResetResponse> {
+  const response = await apiRequest<PasswordResetResponse>('/api/panelist/reset-password', {
+    method: 'POST',
+    body: {
+      email: payload.email,
+      otp: payload.otp,
+      new_password: payload.new_password,
+      confirm_password: payload.confirm_password,
+    },
+    token: '',
+  });
+
+  if (response.success === false) {
+    throw new ApiError(response.message || 'Unable to reset password.', 400);
+  }
+
+  return response;
+}

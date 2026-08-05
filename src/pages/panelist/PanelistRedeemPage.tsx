@@ -6,7 +6,7 @@ import { usePanelistDashboard } from '../../hooks/usePanelistDashboard';
 import './PanelistPortal.css';
 
 export default function PanelistRedeemPage() {
-  const { stats, rewardSettings, redemptionMethods, submitRedemption } = usePanelistDashboard();
+  const { stats, rewardSettings, redemptionMethods, submitRedemption, error: dashboardError } = usePanelistDashboard();
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState(redemptionMethods[0] || 'Bank Transfer');
   const [note, setNote] = useState('');
@@ -65,6 +65,8 @@ export default function PanelistRedeemPage() {
         <h1>Submit redemption request</h1>
         <p>Convert your earned points into rewards through your preferred payout method.</p>
       </header>
+
+      {dashboardError ? <div className="pdash-error" role="alert">{dashboardError}</div> : null}
 
       <motion.div
         className="pdash-wallet"

@@ -48,10 +48,19 @@ export default function PanelistSettingsPage() {
         setPhoneNumber(profile.phone ?? '');
         updateUser(profile);
       })
-      .catch(() => {
-        // Keep session values if profile refresh fails.
+      .catch((loadError) => {
+        if (loadError instanceof ApiError && [401, 403, 404].includes(loadError.status)) {
+          // If the panelist can no longer be found/authorized, force a fresh login.
+          void logout();
+          navigate('/login');
+          return;
+        }
+
+        setError(
+          loadError instanceof ApiError ? loadError.message : 'Unable to load your profile. Please refresh and try again.'
+        );
       });
-  }, [updateUser]);
+  }, [updateUser, logout, navigate]);
 
   const handleSavePersonalInfo = async (event: FormEvent) => {
     event.preventDefault();

@@ -11,6 +11,7 @@ export default function PanelistRedeemHistoryPage() {
     redeemPage,
     redeemTotalPages,
     setRedeemPage,
+    error,
   } = usePanelistDashboard();
 
   return (
@@ -23,6 +24,8 @@ export default function PanelistRedeemHistoryPage() {
         <h1>Track your redemption requests</h1>
         <p>View request date, amount, method, and approval status for every payout.</p>
       </header>
+
+      {error ? <div className="pdash-error" role="alert">{error}</div> : null}
 
       <motion.article
         className="pdash-panel"
