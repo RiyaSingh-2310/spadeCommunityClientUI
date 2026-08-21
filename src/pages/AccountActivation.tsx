@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BadgeCheck } from 'lucide-react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { verifyAccount } from '../api/auth';
 import { ApiError } from '../api/ApiError';
 import { saveActivationSuccess, wasTokenActivated } from '../utils/activationSession';
+import { clearSignupSuccess } from '../utils/signupSession';
 import './AccountActivation.css';
+
+const REDIRECT_MS = 2200;
 
 function useActivationToken() {
   const location = useLocation();
@@ -19,8 +22,17 @@ function useActivationToken() {
 
 export default function AccountActivation() {
   const token = useActivationToken();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
+
+  const finishActivationSuccess = useCallback(() => {
+    saveActivationSuccess(token);
+    clearSignupSuccess();
+    window.dispatchEvent(new CustomEvent('onboarding-updated'));
+    setStatus('success');
+    setErrorMessage('');
+  }, [token]);
 
   const runActivation = useCallback(async () => {
     if (!token) {
@@ -30,8 +42,7 @@ export default function AccountActivation() {
     }
 
     if (wasTokenActivated(token)) {
-      setStatus('success');
-      setErrorMessage('');
+      finishActivationSuccess();
       return;
     }
 
@@ -40,8 +51,7 @@ export default function AccountActivation() {
 
     try {
       await verifyAccount({ token });
-      saveActivationSuccess(token);
-      setStatus('success');
+      finishActivationSuccess();
     } catch (error) {
       const message =
         error instanceof ApiError
@@ -52,11 +62,25 @@ export default function AccountActivation() {
       setErrorMessage(message);
       setStatus('error');
     }
-  }, [token]);
+  }, [token, finishActivationSuccess]);
 
   useEffect(() => {
-    void runActivation();
+    const timer = window.setTimeout(() => {
+      void runActivation();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [runActivation]);
+
+  // After successful verification, redirect back to the client UI login flow.
+  useEffect(() => {
+    if (status !== 'success') return;
+
+    const timer = window.setTimeout(() => {
+      navigate('/login', { replace: true });
+    }, REDIRECT_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [status, navigate]);
 
   if (status === 'loading') {
     return (
@@ -85,6 +109,13 @@ export default function AccountActivation() {
         >
           <h2>Account activation failed</h2>
           <p>{errorMessage || 'This activation link is invalid or expired.'}</p>
+          <button
+            type="button"
+            className="activation-only__button"
+            onClick={() => navigate('/', { replace: true })}
+          >
+            Return Home
+          </button>
         </motion.article>
       </div>
     );
@@ -106,8 +137,15 @@ export default function AccountActivation() {
         <p>
           Your account has been verified successfully.
           <br />
-          You may now proceed to your questionnaire invitation from your email.
+          Redirecting you to sign in…
         </p>
+        <button
+          type="button"
+          className="activation-only__button"
+          onClick={() => navigate('/login', { replace: true })}
+        >
+          Continue to Login
+        </button>
       </motion.article>
     </div>
   );

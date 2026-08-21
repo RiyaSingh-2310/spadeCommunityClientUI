@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Sparkles, Shield, Users, TrendingUp } from 'lucide-react';
 import JoinForm from '../ui/JoinForm';
-import HeroStateCard from '../ui/HeroStateCard';
+import HeroStateCard, { type HeroCardPhase } from '../ui/HeroStateCard';
 import { useOnboardingState } from '../../hooks/useOnboardingState';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import { usePanelistAuth } from '../../context/PanelistAuthContext';
 import { useAutoDismiss } from '../../hooks/useAutoDismiss';
 import { clearSignupSuccess } from '../../utils/signupSession';
+import { saveMemberComplete, getMemberComplete } from '../../utils/memberSession';
+import { getSurveyPath, isSurveyCompleted } from '../../utils/surveyStatus';
 import './HeroSection.css';
 
 const highlights = [
@@ -15,19 +17,14 @@ const highlights = [
   'Trusted by global brands and research institutions',
 ];
 
-const memberHighlights = [
-  'Your research profile is active and eligible for new studies',
-  'Rewards are tracked automatically in your member dashboard',
-  'Participation status updates as new opportunities become available',
-];
-
-const VERIFY_CARD_MS = 5000;
+/** Registration verification-success card stays visible for 1 minute. */
+const VERIFY_CARD_MS = 60_000;
 const VERIFY_FADE_MS = 400;
 
 export default function HeroSection() {
   const { ref: leftRef, className: leftClass } = useScrollReveal();
   const { ref: rightRef, isVisible: rightVisible } = useScrollReveal();
-  const { isAuthenticated } = usePanelistAuth();
+  const { isAuthenticated, user } = usePanelistAuth();
   const [captchaReady, setCaptchaReady] = useState(false);
   const [onboardingRefresh, setOnboardingRefresh] = useState(0);
   const onboarding = useOnboardingState(onboardingRefresh);
@@ -45,16 +42,40 @@ export default function HeroSection() {
     onDismiss: handleVerifyDismiss,
   });
 
+  // Persist survey completion from auth/profile so Home state survives logout/refresh.
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    if (!isSurveyCompleted(user)) return;
+    if (getMemberComplete()) return;
+
+    saveMemberComplete({
+      email: user.email,
+      completedAt: new Date().toISOString(),
+    });
+
+    const timer = window.setTimeout(() => {
+      setOnboardingRefresh((v) => v + 1);
+      window.dispatchEvent(new CustomEvent('onboarding-updated'));
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [isAuthenticated, user]);
+
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)');
 
-    if (mq.matches) {
+    const enableCaptcha = () => {
       setCaptchaReady(true);
+    };
+
+    let timer = 0;
+
+    if (mq.matches) {
+      timer = window.setTimeout(enableCaptcha, 0);
     } else if (rightVisible) {
-      const timer = window.setTimeout(() => setCaptchaReady(true), 120);
-      return () => window.clearTimeout(timer);
+      timer = window.setTimeout(enableCaptcha, 120);
     } else {
-      setCaptchaReady(false);
+      timer = window.setTimeout(() => setCaptchaReady(false), 0);
     }
 
     const onChange = () => {
@@ -66,21 +87,44 @@ export default function HeroSection() {
     };
 
     mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    return () => {
+      window.clearTimeout(timer);
+      mq.removeEventListener('change', onChange);
+    };
   }, [rightVisible]);
 
-  const showMemberCopy = !isAuthenticated && onboarding.phase === 'member';
-  const showJoinForm = onboarding.phase === 'none';
-  const showRightCard = !isAuthenticated && onboarding.phase !== 'member';
-  const isExpandedHero = isAuthenticated || onboarding.phase === 'member';
-  const listItems = showMemberCopy ? memberHighlights : highlights;
+  const surveyCompleted =
+    onboarding.phase === 'member' || (isAuthenticated && isSurveyCompleted(user));
+  const surveyPending = isAuthenticated && !surveyCompleted;
+  const surveyPath = getSurveyPath(user);
+
+  // A: not registered → join form
+  const showJoinForm = !isAuthenticated && onboarding.phase === 'none';
+  // B: registration submitted / verification email sent
   const showVerifyCard =
     !isAuthenticated && (onboarding.phase === 'registered' || verifyExiting);
+  // C: registered but verified (activated), survey not completed, not logged in
+  const showActivatedCard =
+    !isAuthenticated && onboarding.phase === 'activated' && !verifyExiting;
+  // D: verified + logged in + survey not completed
+  const showSurveyPendingCard = surveyPending;
+  // E: survey completed → hide registration/survey boxes, center marketing content
+  const showCompleteCentered = surveyCompleted;
+
+  const showRightCard =
+    !showCompleteCentered &&
+    (showJoinForm || showVerifyCard || showActivatedCard || showSurveyPendingCard);
+
+  const isExpandedHero = !showRightCard;
+  const listItems = highlights;
+
+  let cardPhase: HeroCardPhase = 'none';
+  if (showVerifyCard) cardPhase = 'registered';
+  else if (showSurveyPendingCard) cardPhase = 'surveyPending';
+  else if (showActivatedCard) cardPhase = 'activated';
 
   return (
-    <section
-      className={`hero-v2${isExpandedHero ? ' hero-v2--expanded' : ''}${showMemberCopy ? ' hero-v2--member' : ''}`}
-    >
+    <section className={`hero-v2${isExpandedHero ? ' hero-v2--expanded' : ''}`}>
       <div className="hero-v2__backdrop" aria-hidden="true">
         <div className="hero-v2__mesh" />
         <span className="hero-v2__orb hero-v2__orb--1" />
@@ -94,31 +138,21 @@ export default function HeroSection() {
       >
         <div
           ref={leftRef}
-          className={`hero-v2__copy ${leftClass}${isExpandedHero ? ' hero-v2__copy--expanded' : ''}${showMemberCopy ? ' hero-v2__copy--member' : ''}`}
+          className={`hero-v2__copy ${leftClass}${isExpandedHero ? ' hero-v2__copy--expanded' : ''}`}
         >
           <div className="hero-v2__badge">
             <Sparkles size={14} />
-            {showMemberCopy ? 'Community Member' : 'Premium Research Community'}
+            Premium Research Community
           </div>
 
           <h1 className="hero-v2__title">
-            {showMemberCopy ? (
-              <>
-                You&apos;re all set.
-                <span className="hero-v2__title-gradient"> Welcome back.</span>
-              </>
-            ) : (
-              <>
-                Shape the future of products.
-                <span className="hero-v2__title-gradient"> Get rewarded</span> for your perspective.
-              </>
-            )}
+            Shape the future of products.
+            <span className="hero-v2__title-gradient"> Get rewarded</span> for your perspective.
           </h1>
 
           <p className="hero-v2__lead">
-            {showMemberCopy
-              ? 'Your onboarding is complete. Explore your dashboard, track rewards, and stay ready for your next research opportunity.'
-              : 'Join an exclusive panel of verified members contributing to meaningful research — with transparent rewards and enterprise-grade privacy.'}
+            Join an exclusive panel of verified members contributing to meaningful research —
+            with transparent rewards and enterprise-grade privacy.
           </p>
 
           <ul className="hero-v2__list">
@@ -169,8 +203,9 @@ export default function HeroSection() {
                   className={`hero-v2__panel-state${showVerifyCard && verifyExiting ? ' hero-v2__panel-state--exiting' : ' hero-v2__panel-state--enter'}`}
                 >
                   <HeroStateCard
-                    phase={showVerifyCard ? 'registered' : onboarding.phase}
-                    email={onboarding.email}
+                    phase={cardPhase}
+                    email={user?.email ?? onboarding.email}
+                    surveyPath={surveyPath}
                   />
                 </div>
               )}

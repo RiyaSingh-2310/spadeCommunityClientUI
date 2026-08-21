@@ -2,6 +2,7 @@ import {
   ArrowRight,
   BadgeCheck,
   CheckCircle2,
+  ClipboardList,
   Gift,
   Mail,
   Sparkles,
@@ -9,16 +10,70 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { OnboardingPhase } from '../../hooks/useOnboardingState';
+import { useAuthModal } from '../../context/AuthModalContext';
 import './HeroStateCard.css';
 
+export type HeroCardPhase =
+  | 'none'
+  | 'registered'
+  | 'activated'
+  | 'member'
+  | 'surveyPending';
+
 interface HeroStateCardProps {
-  phase: OnboardingPhase;
+  phase: HeroCardPhase;
   email?: string;
+  surveyPath?: string | null;
 }
 
-export default function HeroStateCard({ phase, email }: HeroStateCardProps) {
+export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCardProps) {
   const navigate = useNavigate();
+  const { openLogin } = useAuthModal();
+
+  if (phase === 'surveyPending') {
+    return (
+      <div className="hero-state hero-state--activated">
+        <div className="hero-state__glow" aria-hidden="true" />
+        <div className="hero-state__icon-wrap hero-state__icon-wrap--activated">
+          <ClipboardList size={32} strokeWidth={1.75} />
+        </div>
+        <p className="hero-state__eyebrow">Survey Pending</p>
+        <h2 className="hero-state__title">Complete your profile survey</h2>
+        <p className="hero-state__body">
+          Your account is verified. Finish your questionnaire to unlock study matching and
+          rewards tracking in your dashboard.
+        </p>
+        {email && (
+          <p className="hero-state__meta">
+            Signed in as <strong>{email}</strong>
+          </p>
+        )}
+        {surveyPath ? (
+          <button
+            type="button"
+            className="hero-state__cta hero-state__cta--member"
+            onClick={() => navigate(surveyPath)}
+          >
+            Continue Survey
+            <ArrowRight size={18} />
+          </button>
+        ) : (
+          <p className="hero-state__hint">
+            <Sparkles size={14} />
+            Open the survey link from your email to continue.
+          </p>
+        )}
+        <button
+          type="button"
+          className="hero-state__cta hero-state__cta--secondary"
+          onClick={() => navigate('/dashboard')}
+        >
+          Go to Dashboard
+          <ArrowRight size={18} />
+        </button>
+      </div>
+    );
+  }
 
   if (phase === 'member') {
     return (
@@ -90,13 +145,35 @@ export default function HeroStateCard({ phase, email }: HeroStateCardProps) {
         <p className="hero-state__eyebrow">Account Activated</p>
         <h2 className="hero-state__title">Your account has been successfully activated.</h2>
         <p className="hero-state__body">
-          A questionnaire link has been sent to your registered email address. Please check
-          your inbox and complete your profile to participate in upcoming research
-          opportunities.
+          You can now sign in. A questionnaire link has also been sent to your registered email —
+          complete it to finish onboarding and start earning rewards.
         </p>
         {email && (
           <p className="hero-state__meta">
-            Questionnaire invitation sent to <strong>{email}</strong>
+            Verified account: <strong>{email}</strong>
+          </p>
+        )}
+        <button
+          type="button"
+          className="hero-state__cta hero-state__cta--member"
+          onClick={openLogin}
+        >
+          Sign In
+          <ArrowRight size={18} />
+        </button>
+        {surveyPath ? (
+          <button
+            type="button"
+            className="hero-state__cta hero-state__cta--secondary"
+            onClick={() => navigate(surveyPath)}
+          >
+            Open Survey
+            <ArrowRight size={18} />
+          </button>
+        ) : (
+          <p className="hero-state__hint">
+            <Sparkles size={14} />
+            Check your inbox for the survey invitation if you prefer to complete it first.
           </p>
         )}
       </div>
@@ -110,11 +187,11 @@ export default function HeroStateCard({ phase, email }: HeroStateCardProps) {
         <div className="hero-state__icon-wrap hero-state__icon-wrap--registered">
           <Mail size={32} strokeWidth={1.75} />
         </div>
-        <p className="hero-state__eyebrow">Almost There</p>
-        <h2 className="hero-state__title">Verify Your Email</h2>
+        <p className="hero-state__eyebrow">Verification Email Sent</p>
+        <h2 className="hero-state__title">Check Your Email</h2>
         <p className="hero-state__body">
-          We sent an activation link to your inbox. Confirm your email to activate your
-          research community profile.
+          We&apos;ve sent a verification email to your registered address. Please open the
+          verification link to activate your account before signing in.
         </p>
         {email && (
           <p className="hero-state__meta">
@@ -123,7 +200,8 @@ export default function HeroStateCard({ phase, email }: HeroStateCardProps) {
         )}
         <p className="hero-state__hint">
           <Sparkles size={14} />
-          Check spam if you don&apos;t see it within a few minutes.
+          Check spam if you don&apos;t see it within a few minutes. This message will return to
+          the registration form shortly.
         </p>
       </div>
     );

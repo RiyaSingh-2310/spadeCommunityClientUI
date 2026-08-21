@@ -227,15 +227,16 @@
   text-underline-offset: 2px;
 }
 
+/* Modal form panel is light — keep high-contrast error styling (do not use pale pink). */
 .join-form--modal .join-form__error {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #fecaca;
+  background: #fef2f2;
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #b91c1c;
 }
 
 .join-form--modal .join-form__error-actions a,
 .join-form--modal .join-form__error-actions button {
-  color: #fecaca;
+  color: #991b1b;
 }
 
 .join-form__footer {
