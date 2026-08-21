@@ -17,7 +17,7 @@ const highlights = [
   'Trusted by global brands and research institutions',
 ];
 
-/** Registration verification-success card stays visible for 1 minute. */
+/** Registration success card (survey-link email) stays visible for 1 minute. */
 const VERIFY_CARD_MS = 60_000;
 const VERIFY_FADE_MS = 400;
 
@@ -100,13 +100,13 @@ export default function HeroSection() {
 
   // A: not registered → join form
   const showJoinForm = !isAuthenticated && onboarding.phase === 'none';
-  // B: registration submitted / verification email sent
+  // B: registered, email link not clicked yet (survey link pending)
   const showVerifyCard =
     !isAuthenticated && (onboarding.phase === 'registered' || verifyExiting);
-  // C: registered but verified (activated), survey not completed, not logged in
+  // C: email link clicked → account activated; survey may still be pending
   const showActivatedCard =
     !isAuthenticated && onboarding.phase === 'activated' && !verifyExiting;
-  // D: verified + logged in + survey not completed
+  // D: logged in + survey not completed
   const showSurveyPendingCard = surveyPending;
   // E: survey completed → hide registration/survey boxes, center marketing content
   const showCompleteCentered = surveyCompleted;

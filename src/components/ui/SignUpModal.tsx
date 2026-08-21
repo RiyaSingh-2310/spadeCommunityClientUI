@@ -44,7 +44,7 @@ export default function SignUpModal() {
       keepMounted
       variant="split"
       brandTitle="Join a premium research community"
-      brandDescription="Create your profile, verify your email, and start participating in studies that reward your perspective."
+      brandDescription="Create your profile, open the survey link from your email, and start participating in studies that reward your perspective."
       isClosing={isClosing}
     >
       {isOpen ? (

@@ -3,7 +3,8 @@ import { fetchQuestionnaire, submitQuestionnaire } from '../api/questionnaire';
 import { ApiError } from '../api/ApiError';
 import type { AnswersMap, Question, QuestionAnswer, Questionnaire } from '../types/questionnaire';
 import { clearOnboardingState } from '../utils/clearOnboardingState';
-import { getSignupSuccess } from '../utils/signupSession';
+import { saveActivationSuccess } from '../utils/activationSession';
+import { getSignupSuccess, clearSignupSuccess } from '../utils/signupSession';
 import { saveMemberComplete } from '../utils/memberSession';
 import { getInitialAnswer, validateAnswer } from '../utils/questionnaireValidation';
 
@@ -75,10 +76,17 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
           ? 'You have already completed this questionnaire. Thank you for your response.'
           : ''
       );
+
+      // Opening the single survey email link activates the account (backend handles verify).
+      // Persist activation locally so Home/login state updates after refresh.
+      const signup = getSignupSuccess();
+      saveActivationSuccess(userToken);
+      clearSignupSuccess();
+      window.dispatchEvent(new CustomEvent('onboarding-updated'));
+
       if (data.alreadyCompleted) {
-        const signup = getSignupSuccess();
         saveMemberComplete({
-          email: signup?.email,
+          email: signup?.email ?? data.panelistName,
           completedAt: new Date().toISOString(),
         });
         clearOnboardingState();
@@ -96,7 +104,10 @@ export function useQuestionnaire(options: UseQuestionnaireOptions = {}): UseQues
   }, [userToken]);
 
   useEffect(() => {
-    void loadQuestionnaire();
+    const timer = window.setTimeout(() => {
+      void loadQuestionnaire();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [loadQuestionnaire]);
 
   const totalQuestions = questionnaire?.questions.length ?? 0;

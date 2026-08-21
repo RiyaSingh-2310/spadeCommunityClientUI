@@ -40,8 +40,8 @@ export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCar
         <p className="hero-state__eyebrow">Survey Pending</p>
         <h2 className="hero-state__title">Complete your profile survey</h2>
         <p className="hero-state__body">
-          Your account is verified. Finish your questionnaire to unlock study matching and
-          rewards tracking in your dashboard.
+          Your account is active. Finish your questionnaire to unlock study matching and rewards
+          tracking in your dashboard.
         </p>
         {email && (
           <p className="hero-state__meta">
@@ -142,15 +142,16 @@ export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCar
         <div className="hero-state__icon-wrap hero-state__icon-wrap--activated">
           <UserCheck size={32} strokeWidth={1.75} />
         </div>
-        <p className="hero-state__eyebrow">Account Activated</p>
-        <h2 className="hero-state__title">Your account has been successfully activated.</h2>
+        <p className="hero-state__eyebrow">Account Active</p>
+        <h2 className="hero-state__title">You&apos;re ready to sign in</h2>
         <p className="hero-state__body">
-          You can now sign in. A questionnaire link has also been sent to your registered email —
-          complete it to finish onboarding and start earning rewards.
+          Your account was activated when you opened your survey link. Sign in with the same
+          credentials you used during registration. If you haven&apos;t finished the survey yet,
+          continue from the link in your email.
         </p>
         {email && (
           <p className="hero-state__meta">
-            Verified account: <strong>{email}</strong>
+            Account: <strong>{email}</strong>
           </p>
         )}
         <button
@@ -167,15 +168,10 @@ export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCar
             className="hero-state__cta hero-state__cta--secondary"
             onClick={() => navigate(surveyPath)}
           >
-            Open Survey
+            Continue Survey
             <ArrowRight size={18} />
           </button>
-        ) : (
-          <p className="hero-state__hint">
-            <Sparkles size={14} />
-            Check your inbox for the survey invitation if you prefer to complete it first.
-          </p>
-        )}
+        ) : null}
       </div>
     );
   }
@@ -187,11 +183,10 @@ export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCar
         <div className="hero-state__icon-wrap hero-state__icon-wrap--registered">
           <Mail size={32} strokeWidth={1.75} />
         </div>
-        <p className="hero-state__eyebrow">Verification Email Sent</p>
-        <h2 className="hero-state__title">Check Your Email</h2>
+        <p className="hero-state__eyebrow">Check Your Email</p>
+        <h2 className="hero-state__title">Survey link sent</h2>
         <p className="hero-state__body">
-          We&apos;ve sent a verification email to your registered address. Please open the
-          verification link to activate your account before signing in.
+          A survey link has been sent to your email. Please check your email to continue.
         </p>
         {email && (
           <p className="hero-state__meta">
@@ -200,8 +195,8 @@ export default function HeroStateCard({ phase, email, surveyPath }: HeroStateCar
         )}
         <p className="hero-state__hint">
           <Sparkles size={14} />
-          Check spam if you don&apos;t see it within a few minutes. This message will return to
-          the registration form shortly.
+          Opening the link activates your account and opens the survey. Check spam if you
+          don&apos;t see it within a few minutes.
         </p>
       </div>
     );

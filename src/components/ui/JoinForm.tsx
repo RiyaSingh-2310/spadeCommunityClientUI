@@ -200,7 +200,8 @@ export default function JoinForm({
       });
 
       const message =
-        response.message || 'Signup successful! Please check your email to activate your account.';
+        response.message ||
+        'Signup successful! A survey link has been sent to your email. Please check your email to continue.';
 
       saveSignupSuccess({
         message,

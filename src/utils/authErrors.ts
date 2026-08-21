@@ -119,7 +119,7 @@ export function classifyAuthError(
       return {
         kind: 'unverified_existing',
         message:
-          'Your account is already registered but not yet verified. Please check your email for the verification link.',
+          'Your account is already registered but not yet active. Please open the survey link from your email to activate your account and continue.',
         suggestContactSupport: true,
         suggestLogin: true,
         supportEmail,
@@ -132,7 +132,7 @@ export function classifyAuthError(
       kind: 'not_verified',
       message:
         raw ||
-        'Your email is not verified yet. Please check your inbox for the verification link before signing in.',
+        'Your account is not active yet. Please open the survey link from your email to activate your account before signing in.',
       suggestContactSupport: true,
       suggestLogin: false,
       supportEmail,
@@ -143,7 +143,7 @@ export function classifyAuthError(
     return {
       kind: 'already_exists',
       message:
-        'An account with this email already exists. If you have not verified your email yet, please check your inbox for the verification link.',
+        'An account with this email already exists. If your account is not active yet, open the survey link from your email. Otherwise, try signing in.',
       suggestContactSupport: true,
       suggestLogin: true,
       supportEmail,
